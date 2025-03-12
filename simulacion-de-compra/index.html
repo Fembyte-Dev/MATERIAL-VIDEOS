@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulación de Compra de Película</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+      font-size: 16px;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 15px;
+    }
+    
+    .movie-card {
+      background-color: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+      width: 100%;
+    }
+    
+    .movie-poster {
+      position: relative;
+      height: auto;
+      max-height: 320px;
+      background-color: #ddd;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    
+    .movie-poster img {
+      width: 100%;
+      height: auto;
+      max-height: 320px;
+      object-fit: cover;
+    }
+    
+    .movie-details {
+      padding: 15px;
+    }
+    
+    h1 {
+      margin-top: 0;
+      color: #333;
+      font-size: 1.5rem;
+    }
+    
+    .price {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #e63946;
+      margin: 16px 0;
+    }
+    
+    .btn {
+      background-color: #2a9d8f;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      width: 100%;
+      max-width: 100%;
+      margin-top: 10px;
+    }
+    
+    .btn:hover {
+      background-color: #218880;
+    }
+    
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    }
+    
+    .payment-modal {
+      background-color: white;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      width: 90%;
+      max-width: 350px;
+      margin: 0 15px;
+    }
+    
+    .spinner {
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #2a9d8f;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 2s linear infinite;
+      margin: 0 auto 20px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .success-message {
+      display: none;
+      color: #2a9d8f;
+    }
+    
+    .success-icon {
+      font-size: 48px;
+      color: #2a9d8f;
+      margin-bottom: 16px;
+    }
+    
+    /* Media queries para dispositivos móviles */
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.3rem;
+      }
+      
+      .movie-details {
+        padding: 12px;
+      }
+      
+      .price {
+        font-size: 1.3rem;
+      }
+      
+      .btn {
+        padding: 10px 20px;
+      }
+      
+      .payment-modal {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="movie-card">
+      <div class="movie-poster">
+        <img src="src/imagen.png" alt="Póster de película" />
+      </div>
+      <div class="movie-details">
+        <h1>Pelicula XXX de los ositos cariñositos</h1>
+        <p>La pelicula mas caliente del 2025, solo por tiempo limitado</p>
+        <p><strong>Duración:</strong> 2h 15min</p>
+        <div class="price">$49.99</div>
+        <button id="buyButton" class="btn">Comprar ahora</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="paymentOverlay" class="overlay">
+    <div class="payment-modal">
+      <div id="processingPayment">
+        <h2>Procesando pago</h2>
+        <div class="spinner"></div>
+        <p>Por favor espere mientras procesamos su pago...</p>
+      </div>
+      <div id="successMessage" class="success-message">
+        <div class="success-icon">✓</div>
+        <h2>¡Compra realizada con éxito!</h2>
+        <p>Gracias por su compra. Disfrute de su película.</p>
+        <p>En breve recibirá un correo electrónico con los detalles de su compra.</p>
+        <button id="closeButton" class="btn">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('buyButton').addEventListener('click', function() {
+      // Mostrar overlay
+      document.getElementById('paymentOverlay').style.display = 'flex';
+      
+      // Simular proceso de pago (3 segundos)
+      setTimeout(function() {
+        // Ocultar spinner y mostrar mensaje de éxito
+        document.getElementById('processingPayment').style.display = 'none';
+        document.getElementById('successMessage').style.display = 'block';
+      }, 3000);
+    });
+    
+    document.getElementById('closeButton').addEventListener('click', function() {
+      // Cerrar el modal
+      document.getElementById('paymentOverlay').style.display = 'none';
+      // Restablecer el estado original
+      document.getElementById('processingPayment').style.display = 'block';
+      document.getElementById('successMessage').style.display = 'none';
+    });
+  </script>
+</body>
+</html>
