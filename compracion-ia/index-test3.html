@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paws & Hearts | Dog Adoption Center</title>
+    <style>
+        /* Base styles */
+        :root {
+            --primary-color: #4f6d7a;
+            --secondary-color: #f79256;
+            --accent-color: #7dcfb6;
+            --background-color: #fbd1a2;
+            --text-color: #312c32;
+            --light-color: #ffffff;
+            --border-radius: 12px;
+            --box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'Arial Rounded MT Bold', sans-serif;
+        }
+        
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        /* Header styles */
+        header {
+            background-color: var(--primary-color);
+            color: var(--light-color);
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: var(--box-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .tagline {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .paw-print {
+            position: absolute;
+            opacity: 0.1;
+            z-index: 0;
+        }
+        
+        .paw-print:nth-child(1) {
+            top: 10%;
+            left: 5%;
+            transform: rotate(15deg);
+            font-size: 2rem;
+        }
+        
+        .paw-print:nth-child(2) {
+            bottom: 15%;
+            right: 8%;
+            transform: rotate(-20deg);
+            font-size: 2.5rem;
+        }
+        
+        /* Navigation styles */
+        nav {
+            background-color: var(--secondary-color);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+        
+        .nav-links a {
+            color: var(--light-color);
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            position: relative;
+            padding: 0.3rem 0;
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background-color: var(--light-color);
+            transition: width 0.3s;
+        }
+        
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+        
+        /* Main content */
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+        
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeIn 1s ease-in-out;
+        }
+        
+        .welcome-section h2 {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .welcome-section p {
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        /* Dog cards section */
+        .dogs-section {
+            margin-bottom: 3rem;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background-color: var(--accent-color);
+            border-radius: 2px;
+        }
+        
+        .dog-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+        
+        .dog-card {
+            background-color: var(--light-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            animation: popIn 0.5s ease-out;
+        }
+        
+        .dog-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .dog-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 4px solid var(--accent-color);
+        }
+        
+        .dog-info {
+            padding: 1.5rem;
+        }
+        
+        .dog-name {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .dog-details {
+            margin-bottom: 1rem;
+        }
+        
+        .dog-details span {
+            display: block;
+            margin-bottom: 0.4rem;
+        }
+        
+        .dog-label {
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+        
+        .adopt-btn {
+            display: block;
+            width: 100%;
+            padding: 0.8rem;
+            background-color: var(--secondary-color);
+            color: var(--light-color);
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .adopt-btn:hover {
+            background-color: #e67e22;
+        }
+        
+        /* Adoption process section */
+        .process-section {
+            margin-bottom: 3rem;
+        }
+        
+        .adoption-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        
+        .step-card {
+            background-color: var(--light-color);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--box-shadow);
+            text-align: center;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+        
+        .step-number {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            background-color: var(--accent-color);
+            color: var(--light-color);
+            font-size: 1.5rem;
+            font-weight: bold;
+            line-height: 50px;
+            border-radius: 50%;
+            margin-bottom: 1rem;
+        }
+        
+        .step-title {
+            font-size: 1.3rem;
+            color: var(--primary-color);
+            margin-bottom: 0.8rem;
+        }
+        
+        /* Contact section */
+        .contact-section {
+            margin-bottom: 3rem;
+            background-color: var(--light-color);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        
+        .contact-form {
+            animation: slideInLeft 0.8s ease-in-out;
+        }
+        
+        .contact-info {
+            animation: slideInRight 0.8s ease-in-out;
+        }
+        
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .form-input,
+        .form-textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-input:focus,
+        .form-textarea:focus {
+            border-color: var(--accent-color);
+            outline: none;
+        }
+        
+        .form-textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+        
+        .submit-btn {
+            background-color: var(--primary-color);
+            color: var(--light-color);
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 0.8rem 1.5rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .submit-btn:hover {
+            background-color: #3a5561;
+        }
+        
+        .contact-info h3 {
+            color: var(--primary-color);
+            margin-bottom: 1.2rem;
+        }
+        
+        .contact-detail {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .contact-icon {
+            margin-right: 0.8rem;
+            font-size: 1.2rem;
+            color: var(--secondary-color);
+        }
+        
+        /* Footer styles */
+        footer {
+            background-color: var(--primary-color);
+            color: var(--light-color);
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .footer-links a {
+            color: var(--light-color);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: var(--accent-color);
+        }
+        
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .social-link {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+        
+        .social-link:hover {
+            background-color: var(--accent-color);
+        }
+        
+        .copyright {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        @keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            70% {
+                transform: scale(1.05);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        /* Media queries for responsiveness */
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 2rem;
+            }
+            
+            .nav-links {
+                gap: 1rem;
+            }
+            
+            .nav-links a {
+                font-size: 1rem;
+            }
+            
+            .section-title {
+                font-size: 1.6rem;
+            }
+            
+            .welcome-section h2 {
+                font-size: 1.8rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .logo {
+                font-size: 1.8rem;
+            }
+            
+            .nav-links {
+                flex-direction: column;
+                align-items: center;
+                gap: 0.8rem;
+            }
+            
+            .welcome-section h2 {
+                font-size: 1.6rem;
+            }
+            
+            .section-title {
+                font-size: 1.4rem;
+            }
+            
+            .step-card {
+                padding: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="paw-print">🐾</div>
+        <div class="paw-print">🐾</div>
+        <div class="logo">Paws & Hearts</div>
+        <p class="tagline">Where Every Dog Finds Their Forever Home</p>
+    </header>
+    
+    <nav>
+        <ul class="nav-links">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#dogs">Available Dogs</a></li>
+            <li><a href="#process">Adoption Process</a></li>
+            <li><a href="#contact">Contact Us</a></li>
+        </ul>
+    </nav>
+    
+    <main>
+        <section id="home" class="welcome-section">
+            <h2>Welcome to Paws & Hearts</h2>
+            <p>We believe every dog deserves a loving home. Our mission is to connect wonderful dogs with caring families. Whether you're looking for a playful puppy or a wise senior dog, we have many furry friends waiting to meet you!</p>
+        </section>
+        
+        <section id="dogs" class="dogs-section">
+            <h2 class="section-title">Meet Our Available Dogs</h2>
+            
+            <div class="dog-cards">
+                <div class="dog-card">
+                    <img src="src/img-1.png" alt="Max - A playful Golden Retriever puppy with golden fur and bright eyes" class="dog-img">
+                    <div class="dog-info">
+                        <h3 class="dog-name">Max</h3>
+                        <div class="dog-details">
+                            <span><span class="dog-label">Breed:</span> Golden Retriever</span>
+                            <span><span class="dog-label">Age:</span> 8 months</span>
+                            <span><span class="dog-label">Gender:</span> Male</span>
+                            <span><span class="dog-label">Personality:</span> Playful, friendly, loves water</span>
+                        </div>
+                        <button class="adopt-btn">Adopt Me!</button>
+                    </div>
+                </div>
+                
+                <div class="dog-card">
+                    <img src="src/img-2.png" alt="Luna - A gentle Husky with striking blue eyes and gray/white coat" class="dog-img">
+                    <div class="dog-info">
+                        <h3 class="dog-name">Luna</h3>
+                        <div class="dog-details">
+                            <span><span class="dog-label">Breed:</span> Siberian Husky</span>
+                            <span><span class="dog-label">Age:</span> 2 years</span>
+                            <span><span class="dog-label">Gender:</span> Female</span>
+                            <span><span class="dog-label">Personality:</span> Gentle, intelligent, energetic</span>
+                        </div>
+                        <button class="adopt-btn">Adopt Me!</button>
+                    </div>
+                </div>
+                
+                <div class="dog-card">
+                    <img src="src/img-3.png" alt="Charlie - A small brown Dachshund with expressive eyes" class="dog-img">
+                    <div class="dog-info">
+                        <h3 class="dog-name">Charlie</h3>
+                        <div class="dog-details">
+                            <span><span class="dog-label">Breed:</span> Dachshund</span>
+                            <span><span class="dog-label">Age:</span> 3 years</span>
+                            <span><span class="dog-label">Gender:</span> Male</span>
+                            <span><span class="dog-label">Personality:</span> Curious, loyal, affectionate</span>
+                        </div>
+                        <button class="adopt-btn">Adopt Me!</button>
+                    </div>
+                </div>
+                
+                <div class="dog-card">
+                    <img src="src/img-4.png" alt="Bella - A spotted Dalmatian with a friendly smile" class="dog-img">
+                    <div class="dog-info">
+                        <h3 class="dog-name">Bella</h3>
+                        <div class="dog-details">
+                            <span><span class="dog-label">Breed:</span> Dalmatian</span>
+                            <span><span class="dog-label">Age:</span> 1 year</span>
+                            <span><span class="dog-label">Gender:</span> Female</span>
+                            <span><span class="dog-label">Personality:</span> Energetic, friendly, loves running</span>
+                        </div>
+                        <button class="adopt-btn">Adopt Me!</button>
+                    </div>
+                </div>
+                
+                <div class="dog-card">
+                    <img src="src/img-5.png" alt="Rocky - A senior Border Collie with black and white coat" class="dog-img">
+                    <div class="dog-info">
+                        <h3 class="dog-name">Rocky</h3>
+                        <div class="dog-details">
+                            <span><span class="dog-label">Breed:</span> Border Collie</span>
+                            <span><span class="dog-label">Age:</span> 8 years</span>
+                            <span><span class="dog-label">Gender:</span> Male</span>
+                            <span><span class="dog-label">Personality:</span> Calm, intelligent, well-trained</span>
+                        </div>
+                        <button class="adopt-btn">Adopt Me!</button>
+                    </div>
+                </div>
+                
+                <div class="dog-card">
+                    <img src="src/img-6.png" alt="Daisy - A small white Bichon Frise with curly fur" class="dog-img">
+                    <div class="dog-info">
+                        <h3 class="dog-name">Daisy</h3>
+                        <div class="dog-details">
+                            <span><span class="dog-label">Breed:</span> Bichon Frise</span>
+                            <span><span class="dog-label">Age:</span> 4 years</span>
+                            <span><span class="dog-label">Gender:</span> Female</span>
+                            <span><span class="dog-label">Personality:</span> Cuddly, sweet, good with children</span>
+                        </div>
+                        <button class="adopt-btn">Adopt Me!</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="process" class="process-section">
+            <h2 class="section-title">The Adoption Process</h2>
+            
+            <div class="adoption-steps">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h3 class="step-title">Browse & Select</h3>
+                    <p>Browse our available dogs and select the one that touches your heart. Each dog's profile includes information about their personality, needs, and compatibility.</p>
+                </div>
+                
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h3 class="step-title">Submit Application</h3>
+                    <p>Fill out our adoption application form. This helps us ensure that each dog is matched with a family that can meet their specific needs.</p>
+                </div>
+                
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h3 class="step-title">Meet & Greet</h3>
+                    <p>Schedule a time to meet your potential new family member. This is an opportunity for you to interact and see if it's a good match.</p>
+                </div>
+                
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <h3 class="step-title">Welcome Home</h3>
+                    <p>Once approved, complete the adoption paperwork, pay the adoption fee, and welcome your new furry friend to their forever home!</p>
+                </div>
+            </div>
+        </section>
+        
+        <section id="contact" class="contact-section">
+            <h2 class="section-title">Contact Us</h2>
+            
+            <div class="contact-grid">
+                <div class="contact-form">
+                    <h3>Send Us a Message</h3>
+                    <form>
+                        <div class="form-group">
+                            <label for="name" class="form-label">Your Name</label>
+                            <input type="text" id="name" class="form-input" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" id="email" class="form-input" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="tel" id="phone" class="form-input">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="message" class="form-label">Your Message</label>
+                            <textarea id="message" class="form-textarea" required></textarea>
+                        </div>
+                        
+                        <button type="submit" class="submit-btn">Send Message</button>
+                    </form>
+                </div>
+                
+                <div class="contact-info">
+                    <h3>Our Information</h3>
+                    
+                    <div class="contact-detail">
+                        <span class="contact-icon">📍</span>
+                        <span>123 Bark Street, Puppyville, PW 12345</span>
+                    </div>
+                    
+                    <div class="contact-detail">
+                        <span class="contact-icon">📞</span>
+                        <span>(555) 123-4567</span>
+                    </div>
+                    
+                    <div class="contact-detail">
+                        <span class="contact-icon">✉️</span>
+                        <span>adopt@pawsandhearts.org</span>
+                    </div>
+                    
+                    <div class="contact-detail">
+                        <span class="contact-icon">⏰</span>
+                        <span>Open: Mon-Fri 10am-6pm, Sat 10am-4pm</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <footer>
+        <ul class="footer-links">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#dogs">Available Dogs</a></li>
+            <li><a href="#process">Adoption Process</a></li>
+            <li><a href="#contact">Contact Us</a></li>
+            <li><a href="#">Volunteer</a></li>
+            <li><a href="#">Donate</a></li>
+            <li><a href="#">FAQ</a></li>
+        </ul>
+        
+        <div class="social-links">
+            <a href="#" class="social-link">FB</a>
+            <a href="#" class="social-link">IG</a>
+            <a href="#" class="social-link">TW</a>
+            <a href="#" class="social-link">YT</a>
+        </div>
+        
+        <p class="copyright">© 2025 Paws & Hearts Dog Adoption Center. All rights reserved.</p>
+    </footer>
+</body>
+</html>

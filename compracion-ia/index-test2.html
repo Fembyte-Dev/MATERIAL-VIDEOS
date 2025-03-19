@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hogar de Patitas - Adopción Responsable</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #FFA726;
+            --secondary: #4FC3F7;
+            --accent: #FF7043;
+            --light: #FFF3E0;
+            --dark: #263238;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Comic Neue', cursive;
+        }
+
+        body {
+            background: linear-gradient(to bottom right, var(--light), #ffffff);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: var(--primary);
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            animation: bounce 2s infinite;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .dog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 1rem;
+        }
+
+        .dog-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .dog-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .dog-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-bottom: 4px solid var(--secondary);
+        }
+
+        .dog-info {
+            padding: 1.5rem;
+            position: relative;
+        }
+
+        .dog-name {
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+            font-size: 1.5rem;
+        }
+
+        .dog-description {
+            color: var(--dark);
+            font-size: 1rem;
+            line-height: 1.4;
+        }
+
+        .dog-details {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 167, 38, 0.95);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            color: white;
+        }
+
+        .dog-card:hover .dog-details {
+            opacity: 1;
+        }
+
+        .badge {
+            background: var(--accent);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            position: absolute;
+            top: -15px;
+            right: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .dog-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .nav {
+            background: var(--secondary);
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 1rem;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+
+        .footer {
+            background: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: auto;
+        }
+
+        .cta-button {
+            background: var(--accent);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            display: inline-block;
+            margin: 1rem 0;
+        }
+
+        .cta-button:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>🐾 Hogar de Patitas 🐾</h1>
+        <p>Encuentra a tu compañero perfecto</p>
+    </header>
+
+    <nav class="nav">
+        <a href="#adoptar">Adoptar</a>
+        <a href="#como-adoptar">Cómo adoptar</a>
+        <a href="#contacto">Contacto</a>
+    </nav>
+
+    <div class="container">
+        <div class="dog-grid">
+            <!-- Perro 1 -->
+            <div class="dog-card">
+                <span class="badge">¡Nuevo!</span>
+                <img src="src/img-1.png" alt="Perro Golden Retriever" class="dog-image">
+                <div class="dog-info">
+                    <h2 class="dog-name">Max</h2>
+                    <p class="dog-description">Golden Retriever juguetón de 2 años, ideal para familias con niños.</p>
+                </div>
+                <div class="dog-details">
+                    <h3>Detalles:</h3>
+                    <p>• 2 años</p>
+                    <p>• Vacunado</p>
+                    <p>• Amigable con niños</p>
+                    <button class="cta-button">Adóptame</button>
+                </div>
+            </div>
+            <div class="dog-card">
+                <span class="badge">¡Nuevo!</span>
+                <img src="src/img-2.png" alt="Perro Golden Retriever" class="dog-image">
+                <div class="dog-info">
+                    <h2 class="dog-name">Max</h2>
+                    <p class="dog-description">Golden Retriever juguetón de 2 años, ideal para familias con niños.</p>
+                </div>
+                <div class="dog-details">
+                    <h3>Detalles:</h3>
+                    <p>• 2 años</p>
+                    <p>• Vacunado</p>
+                    <p>• Amigable con niños</p>
+                    <button class="cta-button">Adóptame</button>
+                </div>
+            </div>
+            <div class="dog-card">
+                <span class="badge">¡Nuevo!</span>
+                <img src="src/img-3.png" alt="Perro Golden Retriever" class="dog-image">
+                <div class="dog-info">
+                    <h2 class="dog-name">Max</h2>
+                    <p class="dog-description">Golden Retriever juguetón de 2 años, ideal para familias con niños.</p>
+                </div>
+                <div class="dog-details">
+                    <h3>Detalles:</h3>
+                    <p>• 2 años</p>
+                    <p>• Vacunado</p>
+                    <p>• Amigable con niños</p>
+                    <button class="cta-button">Adóptame</button>
+                </div>
+            </div>
+
+            <!-- Repetir estructura para más perros -->
+            <!-- Agrega más tarjetas cambiando la imagen y los datos -->
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>© 2023 Hogar de Patitas - Todos los derechos reservados</p>
+        <p>🐶 Cada adopción salva una vida 🐶</p>
+    </footer>
+</body>
+</html>
