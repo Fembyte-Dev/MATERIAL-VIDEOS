@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #2c3e50;
+            color: white;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 6px 12px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .edit-btn {
+            background-color: #3498db;
+            color: white;
+        }
+        .delete-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        .modal-content {
+            background-color: black;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            margin: 10% auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 700px;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            overflow: auto;
+            white-space: pre;
+            position: relative;
+        }
+        .console-text {
+            overflow-y: auto;
+            max-height: 400px;
+        }
+        .close {
+            color: white;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: #e74c3c;
+        }
+        #warning-text {
+            color: #e74c3c;
+            font-weight: bold;
+            font-size: 18px;
+            text-align: center;
+            animation: blink 1s infinite;
+            margin-top: 20px;
+        }
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Panel de Administración de Usuarios</h1>
+        <table id="users-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                    <th>Último acceso</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Los usuarios se cargarán aquí -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal de eliminación -->
+    <div id="delete-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="console-text" id="console-output"></div>
+            <div id="warning-text"></div>
+        </div>
+    </div>
+
+    <script>
+        // Datos de ejemplo para usuarios
+        const users = [
+            { id: 1, name: "María González", email: "maria@ejemplo.com", role: "Administrador", lastLogin: "2025-03-21 14:30" },
+            { id: 2, name: "Carlos Rodríguez", email: "carlos@ejemplo.com", role: "Editor", lastLogin: "2025-03-20 09:15" },
+            { id: 3, name: "Ana López", email: "ana@ejemplo.com", role: "Usuario", lastLogin: "2025-03-22 10:45" },
+            { id: 4, name: "Juan Martínez", email: "juan@ejemplo.com", role: "Editor", lastLogin: "2025-03-19 16:20" },
+            { id: 5, name: "Laura Sánchez", email: "laura@ejemplo.com", role: "Usuario", lastLogin: "2025-03-18 11:05" }
+        ];
+
+        // Función para cargar la tabla de usuarios
+        function loadUsers() {
+            const tableBody = document.querySelector("#users-table tbody");
+            tableBody.innerHTML = "";
+            
+            users.forEach(user => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${user.id}</td>
+                    <td>${user.name}</td>
+                    <td>${user.email}</td>
+                    <td>${user.role}</td>
+                    <td>${user.lastLogin}</td>
+                    <td class="actions">
+                        <button class="edit-btn" onclick="editUser(${user.id})">Editar</button>
+                        <button class="delete-btn" onclick="showDeleteModal(${user.id})">Eliminar</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Función para mostrar el modal cuando se presiona "Eliminar"
+        function showDeleteModal(userId) {
+            const modal = document.getElementById("delete-modal");
+            const consoleOutput = document.getElementById("console-output");
+            const warningText = document.getElementById("warning-text");
+            
+            modal.style.display = "block";
+            consoleOutput.innerHTML = "";
+            warningText.innerHTML = "";
+            
+            // Simulación de eliminación de toda la base de datos
+            simulateDbDeletion(userId);
+        }
+
+        // Función para editar usuario (solo muestra alerta por ahora)
+        function editUser(userId) {
+            alert(`Editando usuario con ID: ${userId}`);
+        }
+
+        // Función para simular la eliminación de la base de datos
+        function simulateDbDeletion(userId) {
+            const consoleOutput = document.getElementById("console-output");
+            const warningText = document.getElementById("warning-text");
+            
+            // Lista de mensajes para la simulación
+            const messages = [
+                `> Iniciando eliminación de usuario con ID: ${userId}...`,
+                "> Conectando a la base de datos...",
+                "> Conexión establecida con éxito a 'produccion_real_no_copia_no_fake.db'",
+                `> Preparando consulta: DELETE FROM users WHERE id = ${userId}`,
+                "> ERROR CRÍTICO: Falta cláusula WHERE en la consulta",
+                "> Ejecutando: DELETE FROM users",
+                "> Eliminando registros de usuarios: 100%",
+                "> ERROR: Restricción de clave foránea detectada",
+                "> Desactivando restricciones de clave foránea",
+                "> Continuando con eliminación en cascada...",
+                "> Eliminando tabla 'permisos': 100%",
+                "> Eliminando tabla 'sesiones': 100%",
+                "> Eliminando tabla 'registros_actividad': 100%",
+                "> Eliminando tabla 'configuracion_sistema': 100%",
+                "> Eliminando tabla 'datos_financieros': 100%",
+                "> ADVERTENCIA: Se ha detectado una eliminación masiva de datos",
+                "> Ignorando advertencia...",
+                "> Vaciando todas las tablas restantes...",
+                "> Eliminación completa",
+                "> Desconectando de la base de datos..."
+            ];
+            
+            let i = 0;
+            
+            // Función para mostrar mensajes con un retraso para simular proceso
+            function displayNextMessage() {
+                if (i < messages.length) {
+                    consoleOutput.innerHTML += messages[i] + "\n";
+                    consoleOutput.scrollTop = consoleOutput.scrollHeight;
+                    i++;
+                    setTimeout(displayNextMessage, Math.random() * 500 + 200);
+                } else {
+                    warningText.innerHTML = "¡ATENCIÓN! TODA LA BASE DE DATOS HA SIDO ELIMINADA";
+                    setTimeout(() => {
+                        warningText.innerHTML += "<br>Te van a despedir. 😉";
+                    }, 3000);
+                }
+            }
+            
+            // Iniciar la simulación
+            displayNextMessage();
+        }
+
+        // Cerrar el modal cuando se hace clic en la X
+        document.querySelector(".close").addEventListener("click", function() {
+            document.getElementById("delete-modal").style.display = "none";
+        });
+
+        // Cerrar el modal cuando se hace clic fuera de él
+        window.addEventListener("click", function(event) {
+            const modal = document.getElementById("delete-modal");
+            if (event.target === modal) {
+                modal.style.display = "none";
+            }
+        });
+
+        // Cargar usuarios al iniciar
+        document.addEventListener("DOMContentLoaded", loadUsers);
+    </script>
+</body>
+</html>
