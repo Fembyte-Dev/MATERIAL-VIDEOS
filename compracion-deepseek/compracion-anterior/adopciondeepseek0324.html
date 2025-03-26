@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Huellitas - Adopción de Perros</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        :root {
+            --primary: #FF7D33;
+            --secondary: #33A1FF;
+            --light: #FFF5F0;
+            --dark: #333333;
+            --success: #4CAF50;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Comic Neue', cursive, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .logo span {
+            display: inline-block;
+            animation: bounce 2s infinite;
+        }
+        
+        .logo span:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+        
+        .logo span:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        nav {
+            background-color: white;
+            padding: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        nav ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+        
+        nav li {
+            margin: 0 1rem;
+        }
+        
+        nav a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: bold;
+            padding: 0.5rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        nav a:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .hero {
+            text-align: center;
+            padding: 2rem 1rem;
+            background: url('https://images.unsplash.com/photo-1586671267731-da2cf3ceeb80?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') center/cover;
+            color: white;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+            position: relative;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.4);
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            animation: fadeInDown 1s;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 1s;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            animation: pulse 2s infinite;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        section {
+            margin-bottom: 3rem;
+        }
+        
+        h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--primary);
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        h2::after {
+            content: '';
+            display: block;
+            width: 50%;
+            height: 4px;
+            background: var(--secondary);
+            margin: 0.5rem auto;
+            border-radius: 2px;
+        }
+        
+        .dog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .dog-card {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            animation: fadeIn 1s;
+        }
+        
+        .dog-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+        
+        .dog-img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-bottom: 4px solid var(--primary);
+        }
+        
+        .dog-info {
+            padding: 1.5rem;
+        }
+        
+        .dog-info h3 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .dog-info p {
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+        
+        .dog-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .dog-stats span {
+            background-color: var(--light);
+            padding: 0.3rem 0.6rem;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        .adopt-btn {
+            display: block;
+            width: 100%;
+            text-align: center;
+            background-color: var(--success);
+            color: white;
+            padding: 0.6rem;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .adopt-btn:hover {
+            background-color: #3e8e41;
+        }
+        
+        .testimonials {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .testimonial {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            border-left: 4px solid var(--primary);
+            background-color: var(--light);
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .testimonial p {
+            font-style: italic;
+            margin-bottom: 0.5rem;
+        }
+        
+        .testimonial-author {
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        footer {
+            background-color: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-top: 2rem;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .footer-links a {
+            color: white;
+            margin: 0 1rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+        
+        .social-icons {
+            margin: 1rem 0;
+        }
+        
+        .social-icons a {
+            color: white;
+            margin: 0 0.5rem;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .social-icons a:hover {
+            color: var(--primary);
+            transform: translateY(-3px);
+        }
+        
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 2rem;
+            }
+            
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            nav li {
+                margin: 0.3rem 0;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .dog-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Animaciones adicionales */
+        .wobble:hover {
+            animation: wobble 0.5s;
+        }
+        
+        @keyframes wobble {
+            0% { transform: translateX(0); }
+            15% { transform: translateX(-5px) rotate(-5deg); }
+            30% { transform: translateX(3px) rotate(3deg); }
+            45% { transform: translateX(-3px) rotate(-3deg); }
+            60% { transform: translateX(2px) rotate(2deg); }
+            75% { transform: translateX(-1px) rotate(-1deg); }
+            100% { transform: translateX(0); }
+        }
+        
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+        
+        @keyframes floating {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <span class="floating">H</span>
+            <span class="floating">U</span>
+            <span class="floating">E</span>
+            <span class="floating">L</span>
+            <span class="floating">L</span>
+            <span class="floating">I</span>
+            <span class="floating">T</span>
+            <span class="floating">A</span>
+            <span class="floating">S</span>
+        </div>
+        <p>Encuentra a tu compañero peludo perfecto</p>
+    </header>
+    
+    <nav>
+        <ul>
+            <li><a href="#inicio" class="wobble">Inicio</a></li>
+            <li><a href="#adoptar" class="wobble">Perros para Adoptar</a></li>
+            <li><a href="#proceso" class="wobble">Proceso de Adopción</a></li>
+            <li><a href="#testimonios" class="wobble">Testimonios</a></li>
+            <li><a href="#contacto" class="wobble">Contacto</a></li>
+        </ul>
+    </nav>
+    
+    <section class="hero" id="inicio">
+        <div class="hero-content">
+            <h1 class="animate__animated animate__fadeInDown">Dale un hogar a un amigo fiel</h1>
+            <p class="animate__animated animate__fadeInUp">Cada año, miles de perros esperan una segunda oportunidad. ¡Tú puedes ser su héroe!</p>
+            <a href="#adoptar" class="btn animate__animated animate__pulse animate__infinite">Ver perritos</a>
+        </div>
+    </section>
+    
+    <div class="container">
+        <section id="adoptar">
+            <h2>Nuestros Peludos Buscan Hogar</h2>
+            <div class="dog-grid">
+                <!-- Perro 1 -->
+                <div class="dog-card animate__animated animate__fadeIn">
+                    <img src="https://images.unsplash.com/photo-1552053831-71594a27632d?ixlib=rb-1.2.1&auto=format&fit=crop&w=612&q=80" alt="Max - Labrador juguetón" class="dog-img">
+                    <div class="dog-info">
+                        <h3>Max</h3>
+                        <div class="dog-stats">
+                            <span>2 años</span>
+                            <span>Labrador</span>
+                            <span>Macho</span>
+                        </div>
+                        <p>Max es un labrador lleno de energía que adora jugar y nadar. Perfecto para familias activas que disfruten de paseos al aire libre.</p>
+                        <a href="#" class="adopt-btn">¡Quiero adoptar!</a>
+                    </div>
+                </div>
+                
+                <!-- Perro 2 -->
+                <div class="dog-card animate__animated animate__fadeIn animate__delay-1s">
+                    <img src="https://images.unsplash.com/photo-1588943211346-0908a1fb0b01?ixlib=rb-1.2.1&auto=format&fit=crop&w=612&q=80" alt="Luna - Cocker Spaniel cariñosa" class="dog-img">
+                    <div class="dog-info">
+                        <h3>Luna</h3>
+                        <div class="dog-stats">
+                            <span>4 años</span>
+                            <span>Cocker Spaniel</span>
+                            <span>Hembra</span>
+                        </div>
+                        <p>Luna es una perrita tranquila y cariñosa que busca un hogar calmado. Adora los mimos y dormir junto a sus humanos.</p>
+                        <a href="#" class="adopt-btn">¡Quiero adoptar!</a>
+                    </div>
+                </div>
+                
+                <!-- Perro 3 -->
+                <div class="dog-card animate__animated animate__fadeIn animate__delay-2s">
+                    <img src="https://images.unsplash.com/photo-1517849845537-4d257902454a?ixlib=rb-1.2.1&auto=format&fit=crop&w=612&q=80" alt="Rocky - Bulldog francés divertido" class="dog-img">
+                    <div class="dog-info">
+                        <h3>Rocky</h3>
+                        <div class="dog-stats">
+                            <span>1 año</span>
+                            <span>Bulldog Francés</span>
+                            <span>Macho</span>
+                        </div>
+                        <p>Rocky es un pequeño payaso que siempre está listo para hacerte reír. Ideal para departamentos por su tamaño pequeño.</p>
+                        <a href="#" class="adopt-btn">¡Quiero adoptar!</a>
+                    </div>
+                </div>
+                
+                <!-- Perro 4 -->
+                <div class="dog-card animate__animated animate__fadeIn">
+                    <img src="https://images.unsplash.com/photo-1561037404-61cd46aa615b?ixlib=rb-1.2.1&auto=format&fit=crop&w=612&q=80" alt="Bella - Pastor Alemán inteligente" class="dog-img">
+                    <div class="dog-info">
+                        <h3>Bella</h3>
+                        <div class="dog-stats">
+                            <span>3 años</span>
+                            <span>Pastor Alemán</span>
+                            <span>Hembra</span>
+                        </div>
+                        <p>Bella es extremadamente inteligente y leal. Necesita una familia que la mantenga activa mental y físicamente.</p>
+                        <a href="#" class="adopt-btn">¡Quiero adoptar!</a>
+                    </div>
+                </div>
+                
+                <!-- Perro 5 -->
+                <div class="dog-card animate__animated animate__fadeIn animate__delay-1s">
+                    <img src="https://images.unsplash.com/photo-1537151625747-768eb6cf92b2?ixlib=rb-1.2.1&auto=format&fit=crop&w=612&q=80" alt="Toby - Beagle curioso" class="dog-img">
+                    <div class="dog-info">
+                        <h3>Toby</h3>
+                        <div class="dog-stats">
+                            <span>5 años</span>
+                            <span>Beagle</span>
+                            <span>Macho</span>
+                        </div>
+                        <p>Toby tiene un olfato increíble y adora seguir rastros. Perfecto para personas que disfruten de largos paseos exploratorios.</p>
+                        <a href="#" class="adopt-btn">¡Quiero adoptar!</a>
+                    </div>
+                </div>
+                
+                <!-- Perro 6 -->
+                <div class="dog-card animate__animated animate__fadeIn animate__delay-2s">
+                    <img src="https://images.unsplash.com/photo-1544568100-847a948585b9?ixlib=rb-1.2.1&auto=format&fit=crop&w=612&q=80" alt="Daisy - Chihuahua valiente" class="dog-img">
+                    <div class="dog-info">
+                        <h3>Daisy</h3>
+                        <div class="dog-stats">
+                            <span>6 meses</span>
+                            <span>Chihuahua</span>
+                            <span>Hembra</span>
+                        </div>
+                        <p>Daisy es pequeña pero tiene una gran personalidad. Ideal como compañera para personas que viven solas o en espacios pequeños.</p>
+                        <a href="#" class="adopt-btn">¡Quiero adoptar!</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="proceso">
+            <h2>¿Cómo Adoptar?</h2>
+            <div class="process-steps">
+                <div class="step animate__animated animate__fadeInLeft">
+                    <h3>1. Conoce a los perros</h3>
+                    <p>Visita nuestro refugio o navega por nuestra página para conocer a los perros disponibles.</p>
+                </div>
+                <div class="step animate__animated animate__fadeInLeft animate__delay-1s">
+                    <h3>2. Completa el formulario</h3>
+                    <p>Llena nuestra solicitud de adopción para que podamos conocerte mejor.</p>
+                </div>
+                <div class="step animate__animated animate__fadeInLeft animate__delay-2s">
+                    <h3>3. Entrevista y visita</h3>
+                    <p>Nos pondremos en contacto para una entrevista y coordinar una visita con el perro.</p>
+                </div>
+                <div class="step animate__animated animate__fadeInLeft animate__delay-3s">
+                    <h3>4. ¡Lleva a casa a tu nuevo amigo!</h3>
+                    <p>Si todo va bien, firma el contrato de adopción y llévate a tu nuevo compañero.</p>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 2rem;">
+                <a href="#" class="btn">Descargar requisitos</a>
+            </div>
+        </section>
+        
+        <section id="testimonios" class="testimonials">
+            <h2>Historias de Éxito</h2>
+            <div class="testimonial animate__animated animate__fadeIn">
+                <p>"Adoptar a Max fue la mejor decisión de nuestra vida. Llena de alegría cada día en nuestro hogar y se ha convertido en el mejor amigo de nuestros hijos."</p>
+                <p class="testimonial-author">- Familia González</p>
+            </div>
+            <div class="testimonial animate__animated animate__fadeIn animate__delay-1s">
+                <p>"Luna llegó en un momento difícil para mí y se convirtió en mi apoyo emocional. Su amor incondicional me ayudó a superar la depresión."</p>
+                <p class="testimonial-author">- Ana Martínez</p>
+            </div>
+            <div class="testimonial animate__animated animate__fadeIn animate__delay-2s">
+                <p>"Rocky es el alma de nuestras reuniones familiares. Nunca imaginé que un perro pequeño podría traer tanta felicidad a nuestra casa."</p>
+                <p class="testimonial-author">- Carlos y Sofía</p>
+            </div>
+        </section>
+    </div>
+    
+    <footer id="contacto">
+        <div class="footer-links">
+            <a href="#" class="wobble">Preguntas frecuentes</a>
+            <a href="#" class="wobble">Voluntariado</a>
+            <a href="#" class="wobble">Donaciones</a>
+            <a href="#" class="wobble">Políticas</a>
+        </div>
+        <div class="social-icons">
+            <a href="#" class="wobble">📱</a>
+            <a href="#" class="wobble">📧</a>
+            <a href="#" class="wobble">📞</a>
+            <a href="#" class="wobble">📍</a>
+        </div>
+        <p>© 2023 Huellitas - Todos los derechos reservados</p>
+        <p>Adopta, no compres. 🐾</p>
+    </footer>
+</body>
+</html>

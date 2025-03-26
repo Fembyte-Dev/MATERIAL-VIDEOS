@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dinosaurio Bailando</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background-color: #f7e9b9;
+      font-family: Arial, sans-serif;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    canvas {
+      border: 2px solid #333;
+      background-color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <h1>Dinosaurio Bailando</h1>
+  <canvas id="dinoCanvas"></canvas>
+  <script>
+    const canvas = document.getElementById('dinoCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Configuración del canvas
+    canvas.width = 400;
+    canvas.height = 400;
+
+    // Variables para la animación
+    let frame = 0;
+    const danceSpeed = 10; // Velocidad de la animación
+
+    // Función para dibujar el dinosaurio
+    function drawDinosaur(frame) {
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+
+      // Limpia el canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Cuerpo del dinosaurio
+      ctx.fillStyle = '#6ab04c';
+      ctx.beginPath();
+      ctx.arc(centerX, centerY - 50, 40, 0, Math.PI * 2); // Cabeza
+      ctx.fill();
+
+      ctx.fillStyle = '#4CAF50';
+      ctx.fillRect(centerX - 30, centerY - 50, 60, 80); // Cuerpo
+
+      // Piernas (movimiento de baile)
+      const legOffset = Math.sin(frame / danceSpeed) * 10; // Movimiento oscilante
+      ctx.fillStyle = '#45a049';
+      ctx.fillRect(centerX - 20, centerY + 30, 10, 40 + legOffset); // Pierna izquierda
+      ctx.fillRect(centerX + 10, centerY + 30, 10, 40 - legOffset); // Pierna derecha
+
+      // Brazos (movimiento de baile)
+      const armOffset = Math.cos(frame / danceSpeed) * 10; // Movimiento oscilante
+      ctx.fillStyle = '#45a049';
+      ctx.fillRect(centerX - 40, centerY - 30, 20, 10 + armOffset); // Brazo izquierdo
+      ctx.fillRect(centerX + 20, centerY - 30, 20, 10 - armOffset); // Brazo derecho
+
+      // Ojos
+      ctx.fillStyle = 'white';
+      ctx.beginPath();
+      ctx.arc(centerX - 10, centerY - 60, 5, 0, Math.PI * 2); // Ojo izquierdo
+      ctx.arc(centerX + 10, centerY - 60, 5, 0, Math.PI * 2); // Ojo derecho
+      ctx.fill();
+
+      ctx.fillStyle = 'black';
+      ctx.beginPath();
+      ctx.arc(centerX - 10, centerY - 60, 2, 0, Math.PI * 2); // Pupila izquierda
+      ctx.arc(centerX + 10, centerY - 60, 2, 0, Math.PI * 2); // Pupila derecha
+      ctx.fill();
+
+      // Boca
+      ctx.strokeStyle = 'black';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY - 50, 10, 0, Math.PI); // Semi-círculo para la boca
+      ctx.stroke();
+    }
+
+    // Función para animar el dinosaurio
+    function animate() {
+      frame++;
+      drawDinosaur(frame);
+      requestAnimationFrame(animate);
+    }
+
+    // Iniciar la animación
+    animate();
+  </script>
+</body>
+</html>

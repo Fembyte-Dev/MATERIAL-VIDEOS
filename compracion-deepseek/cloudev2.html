@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dinosaurio Bailando</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f8ff;
+            overflow: hidden;
+        }
+        
+        canvas {
+            border: 2px solid #333;
+            background-color: #fff;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        h1 {
+            position: absolute;
+            top: 20px;
+            color: #ff6b6b;
+            font-family: 'Arial', sans-serif;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <h1>Dinosaurio Bailando 🦖💃</h1>
+    <canvas id="dinoCanvas" width="600" height="400"></canvas>
+
+    <script>
+        const canvas = document.getElementById('dinoCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Configuración del dinosaurio
+        const dino = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            bodyWidth: 100,
+            bodyHeight: 60,
+            neckLength: 40,
+            headSize: 30,
+            legLength: 50,
+            armLength: 40,
+            tailLength: 80,
+            color: '#78c850',
+            eyeColor: '#fff',
+            pupilColor: '#000',
+            dancePhase: 0,
+            danceSpeed: 0.05
+        };
+        
+        // Función para dibujar el dinosaurio
+        function drawDino() {
+            ctx.save();
+            ctx.translate(dino.x, dino.y);
+            
+            // Fase de baile para animación
+            const danceOffset = Math.sin(dino.dancePhase) * 20;
+            const armSwing = Math.sin(dino.dancePhase * 2) * 30;
+            const legSwing = Math.cos(dino.dancePhase * 2) * 20;
+            const headBob = Math.sin(dino.dancePhase * 3) * 10;
+            
+            // Cola
+            ctx.beginPath();
+            ctx.moveTo(-dino.bodyWidth/2, 0);
+            ctx.quadraticCurveTo(
+                -dino.bodyWidth/2 - dino.tailLength, -20 + danceOffset/2, 
+                -dino.bodyWidth/2 - dino.tailLength * 0.8, 40 + danceOffset
+            );
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = dino.color;
+            ctx.stroke();
+            
+            // Cuerpo
+            ctx.beginPath();
+            ctx.ellipse(0, 0, dino.bodyWidth/2, dino.bodyHeight/2, 0, 0, Math.PI * 2);
+            ctx.fillStyle = dino.color;
+            ctx.fill();
+            
+            // Cuello y cabeza
+            ctx.beginPath();
+            ctx.moveTo(dino.bodyWidth/2 - 10, -dino.bodyHeight/4);
+            ctx.lineTo(dino.bodyWidth/2 + dino.neckLength - 10, -dino.bodyHeight/2 - dino.headSize/2 + headBob);
+            
+            // Cabeza
+            ctx.ellipse(
+                dino.bodyWidth/2 + dino.neckLength - 10, 
+                -dino.bodyHeight/2 - dino.headSize/2 + headBob, 
+                dino.headSize/2, dino.headSize/3, 
+                0, 0, Math.PI * 2
+            );
+            ctx.fillStyle = dino.color;
+            ctx.fill();
+            
+            // Ojos
+            ctx.beginPath();
+            ctx.arc(
+                dino.bodyWidth/2 + dino.neckLength, 
+                -dino.bodyHeight/2 - dino.headSize/2 + headBob - 5, 
+                5, 0, Math.PI * 2
+            );
+            ctx.fillStyle = dino.eyeColor;
+            ctx.fill();
+            
+            // Pupila
+            ctx.beginPath();
+            ctx.arc(
+                dino.bodyWidth/2 + dino.neckLength + 2, 
+                -dino.bodyHeight/2 - dino.headSize/2 + headBob - 5, 
+                2, 0, Math.PI * 2
+            );
+            ctx.fillStyle = dino.pupilColor;
+            ctx.fill();
+            
+            // Brazos (patas delanteras)
+            // Brazo izquierdo
+            ctx.beginPath();
+            ctx.moveTo(dino.bodyWidth/3, 0);
+            ctx.lineTo(dino.bodyWidth/3 + 10 + armSwing, dino.armLength);
+            ctx.lineWidth = 8;
+            ctx.strokeStyle = dino.color;
+            ctx.stroke();
+            
+            // Brazo derecho
+            ctx.beginPath();
+            ctx.moveTo(-dino.bodyWidth/3, 0);
+            ctx.lineTo(-dino.bodyWidth/3 - 10 - armSwing, dino.armLength);
+            ctx.lineWidth = 8;
+            ctx.strokeStyle = dino.color;
+            ctx.stroke();
+            
+            // Piernas (patas traseras)
+            // Pierna izquierda
+            ctx.beginPath();
+            ctx.moveTo(dino.bodyWidth/4, dino.bodyHeight/4);
+            ctx.lineTo(dino.bodyWidth/4 + 15 + legSwing, dino.bodyHeight/4 + dino.legLength);
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = dino.color;
+            ctx.stroke();
+            
+            // Pierna derecha
+            ctx.beginPath();
+            ctx.moveTo(-dino.bodyWidth/4, dino.bodyHeight/4);
+            ctx.lineTo(-dino.bodyWidth/4 - 15 - legSwing, dino.bodyHeight/4 + dino.legLength);
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = dino.color;
+            ctx.stroke();
+            
+            // Sonrisa
+            ctx.beginPath();
+            ctx.arc(
+                dino.bodyWidth/2 + dino.neckLength - 5, 
+                -dino.bodyHeight/2 - dino.headSize/2 + headBob + 5, 
+                8, 0.1 * Math.PI, 0.9 * Math.PI
+            );
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#000';
+            ctx.stroke();
+            
+            ctx.restore();
+        }
+        
+        // Función de animación
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Actualizar fase de baile
+            dino.dancePhase += dino.danceSpeed;
+            
+            // Dibujar dinosaurio
+            drawDino();
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Iniciar animación
+        animate();
+        
+        // Cambiar color al hacer clic
+        canvas.addEventListener('click', () => {
+            const colors = ['#78c850', '#f08030', '#6890f0', '#f8d030', '#f85888', '#98d8d8'];
+            dino.color = colors[Math.floor(Math.random() * colors.length)];
+        });
+    </script>
+</body>
+</html>
