@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor de CPU</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .monitor-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .monitor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .monitor-title {
+            font-weight: 600;
+            font-size: 20px;
+        }
+        
+        .monitor-spec {
+            color: #555;
+            font-size: 14px;
+        }
+        
+        .graph-container {
+            position: relative;
+            height: 300px;
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .graph-label {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .graph-grid {
+            display: grid;
+            grid-template-columns: repeat(60, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            height: 100%;
+            width: 100%;
+        }
+        
+        .grid-line {
+            border-right: 1px solid #f0f0f0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .graph-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .usage-info {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            background-color: #f9f9f9;
+        }
+        
+        .usage-column {
+            margin-right: 20px;
+        }
+        
+        .usage-label {
+            font-size: 12px;
+            color: #777;
+            margin-bottom: 4px;
+        }
+        
+        .usage-value {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .details-container {
+            display: flex;
+            padding: 20px;
+        }
+        
+        .detail-column {
+            margin-right: 40px;
+        }
+        
+        .detail-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .detail-item {
+            display: flex;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .detail-label {
+            width: 150px;
+            color: #555;
+        }
+        
+        .detail-value {
+            font-weight: 500;
+        }
+        
+        .time-range {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 20px;
+            font-size: 12px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="monitor-container">
+        <div class="monitor-header">
+            <div class="monitor-title">CPU</div>
+            <div class="monitor-spec">Gráfica del Pueblo - Gráfica Chatarra (pero chida) </div>
+        </div>
+        
+        <div class="graph-container">
+            <div class="graph-label">Actividad de la CPU</div>
+            <div class="graph-grid" id="graphGrid"></div>
+            <canvas id="cpuGraph" class="graph-canvas"></canvas>
+        </div>
+        
+        <div class="time-range">
+            <div>60 segundos</div>
+            <div>0</div>
+        </div>
+        
+        <div class="usage-info">
+            <div class="usage-column">
+                <div class="usage-label">Uso</div>
+                <div class="usage-value" id="cpuUsage">0%</div>
+            </div>
+            <div class="usage-column">
+                <div class="usage-label">Velocidad</div>
+                <div class="usage-value" id="cpuSpeed">0 GHz</div>
+            </div>
+        </div>
+        
+        <div class="details-container">
+            <div class="detail-column">
+                <div class="detail-title">Procesos</div>
+                <div class="detail-value" id="processCount">0</div>
+            </div>
+            <div class="detail-column">
+                <div class="detail-title">Subprocesos</div>
+                <div class="detail-value" id="threadCount">0</div>
+            </div>
+            <div class="detail-column">
+                <div class="detail-title">Identificadores</div>
+                <div class="detail-value" id="handleCount">0</div>
+            </div>
+        </div>
+        
+        <div class="details-container">
+            <div class="detail-column">
+                <div class="detail-item">
+                    <div class="detail-label">Velocidad de base:</div>
+                    <div class="detail-value" id="baseSpeed">3.90 GHz (de habre)</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Sockets:</div>
+                    <div class="detail-value">1 Socket Solitario</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Núcleos de Pobresa:</div>
+                    <div class="detail-value">6 (Extrema)</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Procesadores lógicos:</div>
+                    <div class="detail-value">12 Hilos de Esperanza</div>
+                </div>
+            </div>
+            <div class="detail-column">
+                <div class="detail-item">
+                    <div class="detail-label">Virtualización:</div>
+                    <div class="detail-value">Habilitado</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Cache L1:</div>
+                    <div class="detail-value">384 kB</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Cache L2:</div>
+                    <div class="detail-value">3.0 MB</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Cache L3:</div>
+                    <div class="detail-value">16.0 MB</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="details-container">
+            <div class="detail-column">
+                <div class="detail-title">Tiempo activo</div>
+                <div class="detail-value" id="uptime">0:00:00</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Crear la cuadrícula
+        const gridContainer = document.getElementById('graphGrid');
+        for (let i = 0; i < 600; i++) {
+            const gridCell = document.createElement('div');
+            gridCell.className = 'grid-line';
+            gridContainer.appendChild(gridCell);
+        }
+        
+        // Configuración del gráfico
+        const canvas = document.getElementById('cpuGraph');
+        const ctx = canvas.getContext('2d');
+        const dataPoints = Array(60).fill(0);
+        let uptimeSeconds = 0;
+        
+        // Ajustar el tamaño del canvas al contenedor
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+        
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        
+        // Función para dibujar el gráfico
+        function drawGraph() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const width = canvas.width;
+            const height = canvas.height;
+            const pointWidth = width / 60;
+            
+            ctx.beginPath();
+            ctx.moveTo(0, height - (dataPoints[0] / 100) * height);
+            
+            for (let i = 1; i < dataPoints.length; i++) {
+                ctx.lineTo(i * pointWidth, height - (dataPoints[i] / 100) * height);
+            }
+            
+            ctx.lineTo(width, height);
+            ctx.lineTo(0, height);
+            ctx.closePath();
+            
+            // Gradiente para el área bajo la curva
+            const gradient = ctx.createLinearGradient(0, 0, 0, height);
+            gradient.addColorStop(0, 'rgba(0, 120, 212, 0.5)');
+            gradient.addColorStop(1, 'rgba(0, 120, 212, 0.1)');
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            
+            // Línea de la curva
+            ctx.beginPath();
+            ctx.moveTo(0, height - (dataPoints[0] / 100) * height);
+            
+            for (let i = 1; i < dataPoints.length; i++) {
+                ctx.lineTo(i * pointWidth, height - (dataPoints[i] / 100) * height);
+            }
+            
+            ctx.strokeStyle = '#0078d4';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+        
+        // Función para actualizar los datos de la CPU
+        function updateCPUData() {
+            // Simulación de datos de CPU
+            const newUsage = Math.floor(Math.random() * 50) + 5; // Uso entre 5% y 55%
+            dataPoints.shift();
+            dataPoints.push(newUsage);
+            
+            const cpuSpeed = (3.9 + Math.random() * 0.9).toFixed(2); // Velocidad entre 3.9 y 4.8 GHz
+            const processCount = Math.floor(Math.random() * 100) + 150; // Entre 150 y 250 procesos
+            const threadCount = Math.floor(Math.random() * 1000) + 2500; // Entre 2500 y 3500 subprocesos
+            const handleCount = Math.floor(Math.random() * 20000) + 90000; // Entre 90000 y 110000 manejadores
+            
+            // Actualizar los elementos de la UI
+            document.getElementById('cpuUsage').textContent = `${newUsage}%`;
+            document.getElementById('cpuSpeed').textContent = `${cpuSpeed} GHz`;
+            document.getElementById('processCount').textContent = processCount;
+            document.getElementById('threadCount').textContent = threadCount;
+            document.getElementById('handleCount').textContent = handleCount;
+            
+            // Actualizar tiempo activo
+            uptimeSeconds++;
+            const hours = Math.floor(uptimeSeconds / 3600);
+            const minutes = Math.floor((uptimeSeconds % 3600) / 60);
+            const seconds = uptimeSeconds % 60;
+            document.getElementById('uptime').textContent = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Redibujar el gráfico
+            drawGraph();
+        }
+        
+        // Iniciar la actualización de datos
+        resizeCanvas();
+        setInterval(updateCPUData, 1000);
+        updateCPUData();
+    </script>
+</body>
+</html>
