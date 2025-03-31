@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulación de Ataque DDoS</title>
+    <style>
+        body {
+            background-color: #0f0f0f;
+            color: #33ff33;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        
+        .terminal {
+            background-color: #000;
+            border-radius: 5px;
+            border: 1px solid #33ff33;
+            padding: 10px;
+            flex-grow: 1;
+            overflow-y: auto;
+            box-shadow: 0 0 10px rgba(51, 255, 51, 0.5);
+        }
+        
+        .terminal-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 5px;
+            background-color: #111;
+            border-bottom: 1px solid #33ff33;
+        }
+        
+        .terminal-title {
+            font-weight: bold;
+        }
+        
+        .terminal-controls span {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 5px;
+        }
+        
+        .control-red {
+            background-color: #ff5f56;
+        }
+        
+        .control-yellow {
+            background-color: #ffbd2e;
+        }
+        
+        .control-green {
+            background-color: #27c93f;
+        }
+        
+        .terminal-content {
+            height: calc(100% - 30px);
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        .console-line {
+            margin: 5px 0;
+            display: flex;
+        }
+        
+        .prompt {
+            color: #ff5f56;
+            margin-right: 10px;
+        }
+        
+        .command {
+            color: #ffbd2e;
+        }
+        
+        .output {
+            color: #33ff33;
+            margin: 0 0 10px 20px;
+        }
+        
+        .error {
+            color: #ff5f56;
+        }
+        
+        .warning {
+            color: #ffbd2e;
+        }
+        
+        .success {
+            color: #27c93f;
+        }
+        
+        .info {
+            color: #5f87ff;
+        }
+        
+        .blink {
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 49% {
+                opacity: 1;
+            }
+            50%, 100% {
+                opacity: 0;
+            }
+        }
+        
+        .control-panel {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        button {
+            background-color: #222;
+            color: #33ff33;
+            border: 1px solid #33ff33;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background-color: #33ff33;
+            color: #000;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            background-color: #111;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .progress-bar {
+            height: 20px;
+            background-color: #222;
+            border-radius: 5px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: #33ff33;
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        .cpu-load .progress.high {
+            background-color: #ff5f56;
+        }
+        
+        .network-usage .progress.high {
+            background-color: #ffbd2e;
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal">
+        <div class="terminal-header">
+            <div class="terminal-controls">
+                <span class="control-red"></span>
+                <span class="control-yellow"></span>
+                <span class="control-green"></span>
+            </div>
+        </div>
+        <div class="terminal-content" id="terminalContent"></div>
+    </div>
+    
+    <div class="stats">
+        <div class="cpu-load">
+            <div>Carga CPU: <span id="cpuLoad">0%</span></div>
+            <div class="progress-bar">
+                <div class="progress" id="cpuProgress"></div>
+            </div>
+        </div>
+        <div class="network-usage">
+            <div>Tráfico de Red: <span id="networkUsage">0 Mbps</span></div>
+            <div class="progress-bar">
+                <div class="progress" id="networkProgress"></div>
+            </div>
+        </div>
+        <div class="connections">
+            <div>Conexiones Activas: <span id="connections">0</span></div>
+        </div>
+    </div>
+    
+    <div class="control-panel">
+        <button id="startButton">Iniciar</button>
+        <button id="mitigateButton" disabled>Activar Mitigación</button>
+        <button id="resetButton">Reiniciar</button>
+    </div>
+
+    <script>
+        // Variables para la simulación
+        let isAttacking = false;
+        let isDetected = false;
+        let isMitigating = false;
+        let attackTimer = null;
+        let normalConnections = 20;
+        let attackConnections = 0;
+        let maxAttackConnections = 5000;
+        let cpuUsage = 10;
+        let networkTraffic = 5;
+        let attackPhase = 0;
+        let attackProgress = 0;
+        
+        // Elementos DOM
+        const terminalContent = document.getElementById('terminalContent');
+        const cpuLoadElement = document.getElementById('cpuLoad');
+        const cpuProgressElement = document.getElementById('cpuProgress');
+        const networkUsageElement = document.getElementById('networkUsage');
+        const networkProgressElement = document.getElementById('networkProgress');
+        const connectionsElement = document.getElementById('connections');
+        const startButton = document.getElementById('startButton');
+        const mitigateButton = document.getElementById('mitigateButton');
+        const resetButton = document.getElementById('resetButton');
+        
+        /**
+         * Función para agregar líneas a la consola
+         * @param {string} text - Texto a mostrar
+         * @param {string} type - Tipo de mensaje (command, output, error, warning, success, info)
+         * @param {boolean} withPrompt - Si debe mostrar el prompt
+         */
+        function addLine(text, type = 'output', withPrompt = false) {
+            const line = document.createElement('div');
+            line.className = 'console-line';
+            
+            if (withPrompt) {
+                const prompt = document.createElement('span');
+                prompt.className = 'prompt';
+                prompt.textContent = 'root@server:~# ';
+                line.appendChild(prompt);
+                
+                const command = document.createElement('span');
+                command.className = 'command';
+                command.textContent = text;
+                line.appendChild(command);
+            } else {
+                const output = document.createElement('span');
+                output.className = type;
+                output.innerHTML = text;
+                line.appendChild(output);
+            }
+            
+            terminalContent.appendChild(line);
+            terminalContent.scrollTop = terminalContent.scrollHeight;
+        }
+        
+        /**
+         * Función para actualizar las estadísticas
+         */
+        function updateStats() {
+            // Actualizar conexiones
+            const totalConnections = normalConnections + attackConnections;
+            connectionsElement.textContent = totalConnections;
+            
+            // Actualizar CPU
+            cpuUsage = 10 + (attackConnections / maxAttackConnections) * 90;
+            cpuLoadElement.textContent = `${Math.min(Math.round(cpuUsage), 100)}%`;
+            cpuProgressElement.style.width = `${Math.min(cpuUsage, 100)}%`;
+            
+            if (cpuUsage > 80) {
+                cpuProgressElement.classList.add('high');
+            } else {
+                cpuProgressElement.classList.remove('high');
+            }
+            
+            // Actualizar tráfico de red
+            networkTraffic = 5 + (attackConnections / maxAttackConnections) * 995;
+            networkUsageElement.textContent = `${Math.round(networkTraffic)} Mbps`;
+            networkProgressElement.style.width = `${Math.min((networkTraffic / 1000) * 100, 100)}%`;
+            
+            if (networkTraffic > 500) {
+                networkProgressElement.classList.add('high');
+            } else {
+                networkProgressElement.classList.remove('high');
+            }
+        }
+        
+        /**
+         * Función para inicializar la consola con mensajes iniciales
+         */
+        function initConsole() {
+            addLine('Inicializando sistema de monitoreo...', 'info');
+            setTimeout(() => {
+                addLine('Sistema de monitoreo activado.', 'success');
+                addLine('netstat -tuln', 'command', true);
+                addLine('Active Internet connections (only servers)\nProto Recv-Q Send-Q Local Address           Foreign Address         State\ntcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN\ntcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN\ntcp        0      0 0.0.0.0:443             0.0.0.0:*               LISTEN\ntcp6       0      0 :::22                   :::*                    LISTEN\ntcp6       0      0 :::80                   :::*                    LISTEN\ntcp6       0      0 :::443                  :::*                    LISTEN');
+                
+                addLine('iptables -L', 'command', true);
+                addLine('Chain INPUT (policy ACCEPT)\ntarget     prot opt source               destination\nACCEPT     all  --  anywhere             anywhere             state RELATED,ESTABLISHED\nACCEPT     tcp  --  anywhere             anywhere             tcp dpt:ssh\nACCEPT     tcp  --  anywhere             anywhere             tcp dpt:http\nACCEPT     tcp  --  anywhere             anywhere             tcp dpt:https\nACCEPT     icmp --  anywhere             anywhere\nDROP       all  --  anywhere             anywhere');
+                
+                addLine('ps aux | grep firewall', 'command', true);
+                addLine('root      1234  0.0  0.1 236104 13312 ?       Ssl  10:30   0:00 /usr/sbin/firewalld -s\nroot      5678  0.0  0.0  12940   984 pts/0    S+   10:35   0:00 grep --color=auto firewall');
+                
+                updateStats();
+            }, 1000);
+        }
+        
+        /**
+         * Función para simular el inicio de un ataque DDoS
+         */
+        function startAttack() {
+            if (isAttacking) return;
+            
+            isAttacking = true;
+            attackPhase = 1;
+            startButton.disabled = true;
+            
+            addLine('\n<span class="blink">█</span> Iniciando simulación de ataque DDoS...', 'warning');
+            
+            // Fase 1: Reconocimiento inicial
+            setTimeout(() => {
+                addLine('\n[Fase 1: Reconocimiento] Se detecta un aumento en las solicitudes de ping', 'info');
+                addLine('tail -f /var/log/syslog', 'command', true);
+                
+                let pingCount = 0;
+                const pingInterval = setInterval(() => {
+                    const ip = `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
+                    addLine(`${new Date().toLocaleTimeString()} server kernel: ICMP echo request from ${ip}`, pingCount % 3 === 0 ? 'warning' : 'output');
+                    pingCount++;
+                    
+                    if (pingCount > 10) {
+                        clearInterval(pingInterval);
+                        proceedToPhase2();
+                    }
+                }, 500);
+            }, 2000);
+        }
+        
+        /**
+         * Función para la Fase 2 del ataque: Inicio de conexiones
+         */
+        function proceedToPhase2() {
+            attackPhase = 2;
+            addLine('\n[Fase 2: Inicio de Ataque] Se detectan múltiples conexiones SYN', 'warning');
+            addLine('tcpdump -i eth0 "tcp[tcpflags] & (tcp-syn) != 0"', 'command', true);
+            
+            attackTimer = setInterval(() => {
+                // Incrementar conexiones de ataque
+                const increment = Math.floor(Math.random() * 100) + 50;
+                attackConnections += increment;
+                
+                if (attackConnections > maxAttackConnections) {
+                    attackConnections = maxAttackConnections;
+                }
+                
+                // Mostrar paquetes
+                if (Math.random() > 0.5) {
+                    const ip = `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
+                    const port = Math.floor(Math.random() * 60000) + 1024;
+                    addLine(`${new Date().toLocaleTimeString()} IP ${ip}.${port} > server.${Math.random() > 0.5 ? '80' : '443'}: Flags [S], seq 1234567890, win 65535`, attackConnections > 1000 ? 'error' : 'warning');
+                }
+                
+                updateStats();
+                
+                // Detectar el ataque
+                if (attackConnections > 1000 && !isDetected) {
+                    detectAttack();
+                }
+                
+                // Actualizar progreso del ataque
+                attackProgress = (attackConnections / maxAttackConnections) * 100;
+                
+                // Servidor sobrecargado
+                if (attackConnections > 3000 && attackPhase === 2) {
+                    proceedToPhase3();
+                }
+                
+            }, 500);
+        }
+        
+        /**
+         * Función para detectar el ataque
+         */
+        function detectAttack() {
+            isDetected = true;
+            addLine('\n<span class="blink">█ ALERTA █</span> Se detecta posible ataque DDoS', 'error');
+            addLine('netstat -ant | grep SYN_RECV | wc -l', 'command', true);
+            addLine(`${Math.floor(attackConnections * 0.8)}`, 'error');
+            
+            addLine('tcpdump -nn -i eth0 | grep SYN | head -n 5', 'command', true);
+            
+            for (let i = 0; i < 5; i++) {
+                const ip = `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
+                const port = Math.floor(Math.random() * 60000) + 1024;
+                addLine(`${new Date().toLocaleTimeString()} IP ${ip}.${port} > server.80: Flags [S], seq ${Math.floor(Math.random() * 1000000000)}, win 65535`, 'error');
+            }
+            
+            mitigateButton.disabled = false;
+        }
+        
+        /**
+         * Función para la Fase 3 del ataque: Servidor sobrecargado
+         */
+        function proceedToPhase3() {
+            attackPhase = 3;
+            addLine('\n[Fase 3: Servidor Sobrecargado] El servidor está experimentando tiempos de respuesta elevados', 'error');
+            addLine('htop', 'command', true);
+            addLine('Sistema sobrecargado - CPU al límite - Memoria RAM casi agotada', 'error');
+            addLine(`Tiempo de respuesta: ${Math.floor(Math.random() * 10000) + 5000}ms`, 'error');
+            
+            if (!isMitigating) {
+                addLine('\n<span class="blink">█ ALERTA CRÍTICA █</span> Servidor a punto de caer. Se requiere intervención inmediata.', 'error');
+            }
+        }
+        
+        /**
+         * Función para aplicar mitigación
+         */
+        function mitigate() {
+            if (isMitigating) return;
+            
+            isMitigating = true;
+            mitigateButton.disabled = true;
+            
+            addLine('\n[Iniciando Contramedidas] Aplicando estrategias de mitigación de DDoS', 'info');
+            
+            // Paso 1: Análisis de tráfico
+            addLine('1. Analizando patrones de tráfico malicioso...', 'info');
+            setTimeout(() => {
+                addLine('   Se identifican IPs de origen sospechosas', 'success');
+                
+                // Paso 2: Configurar reglas de firewall
+                addLine('2. Configurando reglas de firewall...', 'info');
+                addLine('iptables -A INPUT -p tcp --syn -m limit --limit 1/s --limit-burst 3 -j ACCEPT', 'command', true);
+                addLine('iptables -A INPUT -p tcp --syn -j DROP', 'command', true);
+                setTimeout(() => {
+                    addLine('   Reglas de rate limiting aplicadas', 'success');
+                    
+                    // Paso 3: Activar filtrado
+                    addLine('3. Activando filtrado de tráfico...', 'info');
+                    addLine('/usr/local/bin/ddos-defense --activate', 'command', true);
+                    addLine('Filtro anti-DDoS activado correctamente', 'success');
+                    
+                    // Iniciar reducción gradual
+                    setTimeout(() => {
+                        addLine('\n[Mitigación en progreso] El ataque está siendo contenido', 'success');
+                        
+                        // Reducir gradualmente las conexiones de ataque
+                        const mitigationInterval = setInterval(() => {
+                            attackConnections -= Math.floor(Math.random() * 200) + 100;
+                            
+                            if (attackConnections <= 0) {
+                                attackConnections = 0;
+                                clearInterval(mitigationInterval);
+                                attackResolved();
+                            }
+                            
+                            updateStats();
+                        }, 1000);
+                    }, 2000);
+                }, 2000);
+            }, 3000);
+        }
+        
+        /**
+         * Función para finalizar la resolución del ataque
+         */
+        function attackResolved() {
+            clearInterval(attackTimer);
+            isAttacking = false;
+            
+            addLine('\n[Ataque Contenido] El ataque DDoS ha sido mitigado con éxito', 'success');
+            addLine('Generando informe de incidente...', 'info');
+            
+            setTimeout(() => {
+                addLine('\n====== INFORME DE INCIDENTE DE SEGURIDAD ======', 'info');
+                addLine('Tipo de ataque: DDoS (Denegación de Servicio Distribuido)', 'info');
+                addLine(`Duración: ${Math.floor(Math.random() * 10) + 5} minutos`, 'info');
+                addLine(`Pico de conexiones: ${Math.max(attackConnections)} conexiones simultáneas`, 'info');
+                addLine(`Pico de tráfico: ${Math.round(networkTraffic)} Mbps`, 'info');
+                addLine('Contramedidas aplicadas:', 'info');
+                addLine('  - Rate limiting de paquetes SYN', 'info');
+                addLine('  - Filtrado de IPs maliciosas', 'info');
+                addLine('  - Distribución de carga', 'info');
+                addLine('Estado actual: Servidor operando normalmente', 'success');
+                addLine('============================================', 'info');
+                
+                startButton.disabled = false;
+            }, 3000);
+        }
+        
+        /**
+         * Función para reiniciar la simulación
+         */
+        function resetSimulation() {
+            // Detener los temporizadores
+            clearInterval(attackTimer);
+            
+            // Reiniciar variables
+            isAttacking = false;
+            isDetected = false;
+            isMitigating = false;
+            attackConnections = 0;
+            cpuUsage = 10;
+            networkTraffic = 5;
+            attackPhase = 0;
+            
+            // Reiniciar UI
+            terminalContent.innerHTML = '';
+            startButton.disabled = false;
+            mitigateButton.disabled = true;
+            
+            // Actualizar estadísticas
+            updateStats();
+            
+            // Reiniciar consola
+            initConsole();
+        }
+        
+        // Event listeners
+        startButton.addEventListener('click', startAttack);
+        mitigateButton.addEventListener('click', mitigate);
+        resetButton.addEventListener('click', resetSimulation);
+        
+        // Inicializar consola
+        initConsole();
+    </script>
+</body>
+</html>

@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pantalla de Carga del Sistema</title>
+    <style>
+        /* Estilos generales */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(45deg, #000000, #330000, #ff0000, #b30000);
+            background-size: 400% 400%;
+            animation: backgroundAnimation 15s ease infinite;
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        /* Pantalla negra inicial */
+        .black-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000000;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1s ease;
+        }
+        
+        @keyframes backgroundAnimation {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        
+        /* Contenedor principal */
+        .container {
+            text-align: center;
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+        }
+        
+        /* Logo del sistema */
+        .logo-container {
+            margin-bottom: 40px;
+            position: relative;
+        }
+        
+        .logo {
+            width: 200px;
+            height: 200px;
+            object-fit: contain;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
+            animation: logoAnimation 3s ease-in-out infinite;
+        }
+        
+        @keyframes logoAnimation {
+            0% {
+                transform: scale(1) rotate(0deg);
+                box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
+            }
+            50% {
+                transform: scale(1.1) rotate(5deg);
+                box-shadow: 0 0 30px rgba(255, 255, 255, 0.9);
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+                box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
+            }
+        }
+        
+        /* Barra de progreso */
+        .progress-container {
+            width: 100%;
+            background: rgb(255, 255, 255);
+            border-radius: 10px;
+            margin: 30px 0;
+            padding: 2px;
+            border: 1px solid rgba(107, 107, 107, 0.5);
+        }
+        
+        .progress-bar {
+            height: 20px;
+            width: 0%;
+            background: linear-gradient(45deg, #ff4d4d, #e60000, #333333, #b30000);
+            background-size: 200% 200%;
+            animation: gradient 2s ease infinite;
+            border-radius: 8px;
+            transition: width 0.3s ease;
+        }
+        
+        @keyframes gradient {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        
+        /* Mensajes de carga */
+        .loading-text {
+            font-size: 18px;
+            margin: 20px 0;
+            color: #ffffff;
+            min-height: 2em;
+        }
+        
+        /* Pulsar enter para continuar */
+        .press-enter {
+            margin-top: 40px;
+            color: white;
+            font-size: 16px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            padding: 10px 20px;
+            border: 1px solid rgba(255, 0, 0, 0.5);
+            border-radius: 5px;
+            background-color: rgba(255, 0, 0, 0.2);
+        }
+        
+        .press-enter.visible {
+            opacity: 1;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+        }
+        
+        /* Pantalla de inicio de sesión */
+        .login-screen {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #000000, #001a33, #003366, #000000);
+            background-size: 400% 400%;
+            animation: backgroundAnimation 15s ease infinite;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            transition: opacity 1s ease;
+            opacity: 0;
+        }
+        
+        .login-screen.visible {
+            display: flex;
+            opacity: 1;
+        }
+        
+        .login-form {
+            background-color: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+            text-align: center;
+            width: 350px;
+        }
+        
+        .user-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-bottom: 20px;
+            border: 3px solid #ffffff;
+            object-fit: cover;
+        }
+        
+        .username {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: white;
+        }
+        
+        /* Créditos */
+        .credits {
+            position: absolute;
+            bottom: 10px;
+            font-size: 12px;
+            color: rgb(255, 255, 255);
+        }
+        
+        /* Mensaje inicial en pantalla negra */
+        .start-message {
+            color: white;
+            font-size: 20px;
+            text-align: center;
+            animation: pulse 2s infinite;
+        }
+
+        .inspirational-phrase {
+            color: white;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 20px;
+            animation: fadeInOut 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- Pantalla negra inicial -->
+    <div id="blackScreen" class="black-screen">
+        <div class="start-message">Presiona ENTER para iniciar el sistema</div>
+    </div>
+    
+    <div class="container" id="mainContainer" style="display: none;">
+        <div class="logo-container">
+            <img id="logo" class="logo" src="src/logo.png" alt="Logo del Sistema">
+        </div>
+        
+        <h1>ComunistaOS</h1>
+        <div class="progress-container">
+            <div id="progressBar" class="progress-bar"></div>
+        </div>
+        <div id="loadingText" class="loading-text">Iniciando sistema...</div>
+        <div id="pressEnter" class="press-enter">Presiona ENTER para continuar</div>
+    </div>
+    
+    <div id="loginScreen" class="login-screen">
+        <div class="login-form">
+            <img class="user-avatar" src="src/logo.png" alt="Avatar de Usuario">
+            <div class="username">Biembenida Fembyte</div>
+            <div class="press-enter visible">Presiona ENTER para iniciar sesión</div>
+            <div class="inspirational-phrase">De vuelta al frente, camarada. La lucha por la igualdad no descansa hasta que el último explotador caiga.</div>
+        </div>
+    </div>
+    
+    <div class="credits">ComunistaOS v1.0 © 2025</div>
+    
+    <script>
+        // Variables globales
+        let progress = 0;
+        let loadingComplete = false;
+        let loginShown = false;
+        let initialScreenActive = true;
+        let loadingMessages = [
+            "Iniciando sistema...",
+            "Cargando módulos del kernel...",
+            "Verificando hardware...",
+            "Iniciando servicios del sistema...",
+            "Cargando interfaz gráfica...",
+            "Preparando entorno de usuario...",
+            "¡Sistema listo!"
+        ];
+        let audioStartup = null;
+        
+        /**
+         * Inicializa la aplicación
+         * Configura los eventos y prepara la pantalla inicial
+         */
+        function init() {
+            // Crear elemento de audio
+            audioStartup = new Audio();
+            audioStartup.src = "src/sonido.mp3";
+            audioStartup.volume = 0.2;
+            audioStartup.loop = false;
+            
+            // Preparar evento de teclado para detectar ENTER
+            document.addEventListener('keydown', handleKeyPress);
+            
+            // Mostrar pantalla negra inicial
+            document.getElementById('blackScreen').style.display = 'flex';
+            document.getElementById('mainContainer').style.display = 'none';
+        }
+        
+        /**
+         * Inicia la simulación de carga del sistema
+         * Actualiza la barra de progreso y los mensajes
+         */
+        function startLoading() {
+            // Mostrar el primer mensaje
+            updateLoadingMessage(0);
+            
+            // Actualizar la barra de progreso periódicamente
+            const progressInterval = setInterval(() => {
+                // Incrementar el progreso
+                progress += Math.random() * 3 + 1;
+                
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(progressInterval);
+                    loadingComplete = true;
+                    showEnterPrompt();
+                }
+                
+                // Actualizar la interfaz
+                updateProgressBar();
+                
+                // Actualizar mensaje según el progreso
+                const messageIndex = Math.min(
+                    Math.floor(progress / (100 / loadingMessages.length)),
+                    loadingMessages.length - 1
+                );
+                updateLoadingMessage(messageIndex);
+            }, 300);
+        }
+        
+        /**
+         * Actualiza la barra de progreso visual
+         */
+        function updateProgressBar() {
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = `${progress}%`;
+        }
+        
+        /**
+         * Actualiza el mensaje de carga según el índice proporcionado
+         * @param {number} index - Índice del mensaje a mostrar
+         */
+        function updateLoadingMessage(index) {
+            const loadingText = document.getElementById('loadingText');
+            loadingText.textContent = loadingMessages[index];
+        }
+        
+        /**
+         * Muestra el indicador para presionar ENTER
+         */
+        function showEnterPrompt() {
+            const pressEnter = document.getElementById('pressEnter');
+            pressEnter.classList.add('visible');
+        }
+        
+        /**
+         * Maneja el evento de teclado para detectar la tecla ENTER
+         * @param {KeyboardEvent} event - Evento de teclado
+         */
+        function handleKeyPress(event) {
+            // Detectar si se presionó ENTER
+            if (event.key === 'Enter') {
+                if (initialScreenActive) {
+                    // Ocultar pantalla negra y mostrar pantalla de carga
+                    initialScreenActive = false;
+                    document.getElementById('blackScreen').style.opacity = '0';
+                    setTimeout(() => {
+                        document.getElementById('blackScreen').style.display = 'none';
+                        document.getElementById('mainContainer').style.display = 'block';
+                        // Iniciar la simulación de carga y reproducir sonido
+                        startLoading();
+                        playStartupSound();
+                    }, 1000);
+                } else if (loadingComplete && !loginShown) {
+                    // Mostrar pantalla de inicio de sesión
+                    showLoginScreen();
+                } else if (loginShown) {
+                    // Aquí se podría implementar la lógica para iniciar sesión
+                    alert('¡Sesión iniciada con éxito!');
+                }
+            }
+        }
+        
+        /**
+         * Reproduce el sonido de inicio del sistema
+         */
+        function playStartupSound() {
+            if (audioStartup) {
+                audioStartup.play().catch(e => {
+                    console.log("Error al reproducir audio:", e);
+                });
+            }
+        }
+        
+        /**
+         * Muestra la pantalla de inicio de sesión con animación
+         */
+        function showLoginScreen() {
+            const loginScreen = document.getElementById('loginScreen');
+            loginScreen.classList.add('visible');
+            loginShown = true;
+        }
+        
+        // Iniciar cuando el documento esté listo
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
