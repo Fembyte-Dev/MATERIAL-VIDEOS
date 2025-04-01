@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil de Fembyte</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #f8f8f8;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .platform-logo {
+            width: 60px;
+            height: 60px;
+            background-color: #FFB800;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 24px;
+        }
+        
+        .username {
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .pronouns {
+            color: #888;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .menu-button {
+            font-size: 28px;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .profile-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .profile-image {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        
+        .thought-bubble {
+            position: absolute;
+            top: -20px;
+            right: 180px;
+            background-color: white;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .add-button {
+            position: absolute;
+            bottom: 50px;
+            right: 200px;
+            width: 40px;
+            height: 40px;
+            background-color: #00BCD4;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .handle {
+            font-size: 22px;
+            margin-bottom: 20px;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            padding: 10px;
+            border-right: 1px solid #eee;
+        }
+        
+        .stat:last-child {
+            border-right: none;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            transition: all 0.5s ease;
+        }
+        
+        .stat-label {
+            color: #888;
+            font-size: 16px;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .action-button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background-color: #f1f1f1;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .action-button:hover {
+            background-color: #e5e5e5;
+        }
+        
+        .bio {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 18px;
+            line-height: 1.5;
+        }
+        
+        .link {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .link a {
+            color: #333;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        
+        .instructions {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f1f1f1;
+            border-radius: 8px;
+        }
+        
+        .counting {
+            color: red;
+            font-weight: bold;
+            animation: pulse 0.5s infinite alternate;
+        }
+        
+        .counting-up {
+            color: green;
+            font-weight: bold;
+            animation: pulse 0.5s infinite alternate;
+        }
+        
+        @keyframes pulse {
+            from {
+                transform: scale(1);
+            }
+            to {
+                transform: scale(1.05);
+            }
+        }
+        
+        @keyframes countDown {
+            from {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+        }
+        
+        .count-animation {
+            animation: countDown 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="platform-logo">P</div>
+            <div>
+                <div class="username">Fembyte ▾</div>
+                <div class="pronouns">she/her/hers</div>
+            </div>
+            <button class="menu-button">☰</button>
+        </div>
+        
+        <div class="profile-section">
+            <img src="imagen.jpeg" alt="Profile Image" class="profile-image">
+            <div class="add-button">+</div>
+            <div class="handle">@techfemotoko</div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-number">4</div>
+                <div class="stat-label">Siguiendo</div>
+            </div>
+            <div class="stat">
+                <div id="followers" class="stat-number">4578</div>
+                <div class="stat-label">Seguidores</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">44 mil</div>
+                <div class="stat-label">Me gusta</div>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <button class="action-button">Editar perfil</button>
+            <button class="action-button">Compartir perfil</button>
+            <button class="action-button" style="max-width: 50px;">👤+</button>
+        </div>
+        
+        <div class="bio">
+            Chica trans 🏳️‍⚧️✨ Apasionada de la programación 💻 y los videojuegos 🎮🔥
+        </div>
+        
+        <div class="link">
+            <a href="https://fembyte-dev.github.io/portafolio/" target="_blank">
+                🔗 https://fembyte-dev.github.io/portafolio/
+            </a>
+        </div>
+        
+        <div class="instructions">
+            <p><strong>Instrucciones:</strong></p>
+            <p>- Presiona la tecla <strong>1</strong> para reducir seguidores (primera etapa)</p>
+            <p>- Presiona la tecla <strong>2, 3, 4, 5</strong> para continuar reduciendo</p>
+            <p>- En la tecla <strong>5</strong> llegarás a 220 seguidores</p>
+            <p>- Presiona <strong>0</strong> para restablecer a los seguidores originales</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const followersElement = document.getElementById('followers');
+            const originalFollowers = 4578;
+            let currentFollowers = originalFollowers;
+            
+            // Puntos de reducción para cada etapa
+            const stages = {
+                1: 4301,
+                2: 3546,
+                3: 3001,
+                4: 2504,
+                5: 220
+            };
+            
+            function animateCountDown(target) {
+                followersElement.classList.add('counting');
+                
+                // Crear un intervalo para la animación de conteo
+                const interval = setInterval(() => {
+                    if (currentFollowers > target) {
+                        // Crear elemento para la animación de desvanecimiento
+                        const countAnimation = document.createElement('div');
+                        countAnimation.classList.add('count-animation');
+                        countAnimation.style.position = 'absolute';
+                        countAnimation.style.right = `${Math.random() * 50 + 20}%`;
+                        countAnimation.style.top = '40%';
+                        countAnimation.textContent = '-1';
+                        countAnimation.style.color = 'red';
+                        document.querySelector('.stats').appendChild(countAnimation);
+                        
+                        // Eliminar después de la animación
+                        setTimeout(() => {
+                            countAnimation.remove();
+                        }, 50);
+                        
+                        currentFollowers--;
+                        followersElement.textContent = currentFollowers;
+                    } else {
+                        clearInterval(interval);
+                        followersElement.classList.remove('counting');
+                    }
+                }, 10);
+            }
+            
+            // Agregar event listener para las teclas
+            document.addEventListener('keydown', function(event) {
+                const key = event.key;
+                
+                if (key >= '1' && key <= '5') {
+                    const stageNumber = parseInt(key);
+                    const targetFollowers = stages[stageNumber];
+                    
+                    if (currentFollowers > targetFollowers) {
+                        animateCountDown(targetFollowers);
+                    }
+                } else if (key === '0') {
+                    // Restablecer a los valores originales
+                    followersElement.classList.add('counting-up');
+                    
+                    const interval = setInterval(() => {
+                        if (currentFollowers < originalFollowers) {
+                            // Crear elemento para la animación de aumento
+                            const countAnimation = document.createElement('div');
+                            countAnimation.classList.add('count-animation');
+                            countAnimation.style.position = 'absolute';
+                            countAnimation.style.right = `${Math.random() * 50 + 20}%`;
+                            countAnimation.style.top = '40%';
+                            countAnimation.textContent = '+1';
+                            countAnimation.style.color = 'green';
+                            document.querySelector('.stats').appendChild(countAnimation);
+                            
+                            // Eliminar después de la animación
+                            setTimeout(() => {
+                                countAnimation.remove();
+                            }, 50);
+                            
+                            currentFollowers++;
+                            followersElement.textContent = currentFollowers;
+                        } else {
+                            clearInterval(interval);
+                            followersElement.classList.remove('counting-up');
+                        }
+                    }, 5);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
