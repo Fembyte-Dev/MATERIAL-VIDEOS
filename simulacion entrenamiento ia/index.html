@@ -1,0 +1,1823 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulación de Entrenamiento de IA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --dark-color: #2c3e50;
+            --light-color: #f5f5f5;
+            --text-color: #333;
+            --card-bg: #fff;
+            --border-color: #ddd;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        body.dark-theme {
+            --primary-color: #4dabf7;
+            --secondary-color: #51cf66;
+            --danger-color: #ff6b6b;
+            --dark-color: #ced4da;
+            --light-color: #212529;
+            --text-color: #f1f3f5;
+            --card-bg: #343a40;
+            --border-color: #495057;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        * {
+            box-sizing: border-box;
+            transition: var(--transition);
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--light-color);
+            color: var(--text-color);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: var(--dark-color);
+            margin-bottom: 30px;
+            font-weight: 700;
+            font-size: 2.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .control-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .control-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        }
+        
+        .visualization {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .chart-container {
+            flex: 1;
+            min-width: 300px;
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .chart-container h2 {
+            margin-top: 0;
+            color: var(--dark-color);
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .chart-container h2::before {
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+        }
+        
+        .chart-container:nth-child(1) h2::before {
+            content: '\f5fd'; /* fa-brain */
+            color: var(--primary-color);
+        }
+        
+        .chart-container:nth-child(2) h2::before {
+            content: '\f201'; /* fa-chart-line */
+            color: var(--secondary-color);
+        }
+        
+        canvas {
+            width: 100%;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+        }
+        
+        canvas:hover {
+            transform: scale(1.01);
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        #startBtn::before {
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            content: '\f04b'; /* play icon */
+        }
+        
+        #startBtn.paused::before {
+            content: '\f04c'; /* pause icon */
+        }
+        
+        #resetBtn::before {
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            content: '\f2f9'; /* sync icon */
+        }
+        
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 200px;
+        }
+        
+        .slider-container label {
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .slider-container label span {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+        }
+        
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #d7dcdf;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            box-shadow: 0 0 0 6px rgba(52, 152, 219, 0.3);
+        }
+        
+        .metrics {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: rgba(0, 0, 0, 0.03);
+            border-radius: 8px;
+            transition: transform 0.2s;
+        }
+        
+        .metric:hover {
+            transform: translateX(5px);
+        }
+        
+        .metric span:first-child {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+        
+        .metric span:first-child::before {
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+        }
+        
+        .metric:nth-child(1) span:first-child::before {
+            content: '\f201'; /* chart icon */
+            color: var(--secondary-color);
+        }
+        
+        .metric:nth-child(2) span:first-child::before {
+            content: '\f0e7'; /* bolt icon */
+            color: var(--danger-color);
+        }
+        
+        .metric-value {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: var(--dark-color);
+        }
+        
+        .legend {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: rgba(0, 0, 0, 0.03);
+            padding: 8px 12px;
+            border-radius: 20px;
+            transition: transform 0.2s;
+        }
+        
+        .legend-item:hover {
+            transform: translateY(-2px);
+        }
+        
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .epochs-display {
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            background-color: rgba(0, 0, 0, 0.03);
+            border-radius: 8px;
+        }
+        
+        .epochs-display::before {
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            content: '\f017'; /* clock icon */
+            color: var(--primary-color);
+        }
+        
+        .target-accuracy {
+            color: var(--secondary-color);
+            font-weight: bold;
+        }
+        
+        .theme-toggle {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            background-color: rgba(0, 0, 0, 0.05);
+            box-shadow: none;
+        }
+        
+        .theme-toggle:hover {
+            background-color: rgba(0, 0, 0, 0.1);
+            transform: none;
+        }
+        
+        .gradient-visualizer {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: rgba(0, 0, 0, 0.03);
+            border-radius: 8px;
+        }
+        
+        .gradient-visualizer h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .gradient-visualizer h3::before {
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            content: '\f542'; /* compass icon */
+            color: var(--primary-color);
+        }
+        
+        .gradient-arrows {
+            position: relative;
+            height: 100px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .point {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.5s ease;
+        }
+        
+        .point.correct {
+            animation: pulse-correct 1s;
+        }
+        
+        .point.incorrect {
+            animation: pulse-incorrect 1s;
+        }
+        
+        @keyframes pulse-correct {
+            0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(46, 204, 113, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+        }
+        
+        @keyframes pulse-incorrect {
+            0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+        }
+        
+        .model-info {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .model-param {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.03);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+        
+        .model-param:hover {
+            transform: translateY(-2px);
+        }
+        
+        .model-param-label {
+            font-size: 0.9rem;
+            color: var(--text-color);
+            opacity: 0.7;
+            margin-bottom: 5px;
+        }
+        
+        .model-param-value {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+        }
+        
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        @keyframes float-up {
+            0% { transform: translateY(0) rotate(0); opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: var(--primary-color);
+            animation: float-up 4s ease-in-out forwards;
+        }
+        
+        .confetti:nth-child(2n) {
+            background-color: var(--secondary-color);
+            width: 7px;
+            height: 7px;
+            animation-duration: 3.5s;
+        }
+        
+        .confetti:nth-child(3n) {
+            background-color: var(--danger-color);
+            width: 12px;
+            height: 12px;
+            animation-duration: 4.5s;
+        }
+        
+        .tooltip {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 100;
+        }
+        
+        .has-tooltip:hover + .tooltip {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="confetti-container" id="confettiContainer"></div>
+    <div class="tooltip" id="tooltip"></div>
+    
+    <div class="container">
+        <h1>Simulación del Entrenamiento de un Modelo de IA</h1>
+        
+        <div class="control-panel">
+            <button class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
+            
+            <div class="button-group">
+                <button id="startBtn">Iniciar Entrenamiento</button>
+                <button id="resetBtn">Reiniciar</button>
+            </div>
+            
+            <div class="slider-container">
+                <label for="learningRate">Tasa de Aprendizaje: <span id="learningRateValue">0.03</span></label>
+                <input type="range" id="learningRate" min="0.001" max="0.1" step="0.001" value="0.03" class="has-tooltip">
+                <div class="tooltip">Controla qué tan rápido aprende el modelo</div>
+            </div>
+            
+            <div class="slider-container">
+                <label for="speed">Velocidad de Simulación: <span id="speedValue">1</span>x</label>
+                <input type="range" id="speed" min="0.5" max="3" step="0.5" value="1" class="has-tooltip">
+                <div class="tooltip">Ajusta la velocidad de la animación</div>
+            </div>
+            
+            <div class="epochs-display">
+                Época: <span id="epochCounter">0</span> | 
+                <span class="target-accuracy">Meta: 97.6%</span>
+            </div>
+        </div>
+        
+        <div class="visualization">
+            <div class="chart-container">
+                <h2>Espacio de Características</h2>
+                <canvas id="featureSpace" height="300"></canvas>
+                
+                <div class="gradient-visualizer">
+                    <h3>Visualización del Gradiente</h3>
+                    <div class="gradient-arrows" id="gradientVisualizer"></div>
+                </div>
+                
+                <div class="model-info">
+                    <div class="model-param">
+                        <div class="model-param-label">Peso W1</div>
+                        <div class="model-param-value" id="weight1">0.00</div>
+                    </div>
+                    <div class="model-param">
+                        <div class="model-param-label">Peso W2</div>
+                        <div class="model-param-value" id="weight2">0.00</div>
+                    </div>
+                    <div class="model-param">
+                        <div class="model-param-label">Sesgo</div>
+                        <div class="model-param-value" id="bias">0.00</div>
+                    </div>
+                </div>
+                
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #e74c3c;"></div>
+                        <span>Clase A</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #3498db;"></div>
+                        <span>Clase B</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: rgba(0, 0, 0, 0.2);"></div>
+                        <span>Frontera de Decisión</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h2>Métricas de Entrenamiento</h2>
+                <canvas id="metricsChart" height="300"></canvas>
+                <div class="metrics">
+                    <div class="metric">
+                        <span>Precisión:</span>
+                        <span class="metric-value" id="accuracy">0%</span>
+                    </div>
+                    <div class="metric">
+                        <span>Pérdida:</span>
+                        <span class="metric-value" id="loss">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.11.4/dist/gsap.min.js"></script>
+    <script>
+        // Estado global
+        const state = {
+            isTraining: false,
+            epoch: 0,
+            maxEpochs: 100,
+            learningRate: 0.03,
+            simulationSpeed: 1,
+            targetAccuracy: 0.976, // Objetivo de precisión: 97.6%
+            darkTheme: false,
+            data: {
+                features: [],
+                labels: [],
+                testFeatures: [],
+                testLabels: [],
+                animatedPoints: [] // Para animación de puntos
+            },
+            model: {
+                weights: [Math.random() - 0.5, Math.random() - 0.5],
+                bias: Math.random() - 0.5,
+                gradientHistory: [] // Historial de gradientes para visualización
+            },
+            metrics: {
+                history: {
+                    accuracy: [],
+                    loss: []
+                },
+                currentAccuracy: 0,
+                currentLoss: 0
+            },
+            // Parámetros de la curva de aprendizaje predeterminada
+            learningCurve: {
+                startAccuracy: 0.5,
+                midpoint: 50,  // Época donde la curva alcanza aproximadamente el 75% de su objetivo
+                steepness: 0.1  // Controla qué tan rápido crece la curva
+            },
+            animation: {
+                pointsScale: 1,
+                decisionBoundaryOpacity: 0.2,
+                lastCorrectPoint: null,
+                lastIncorrectPoint: null
+            }
+        };
+
+
+        // Referencias a elementos DOM
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const learningRateSlider = document.getElementById('learningRate');
+        const learningRateValue = document.getElementById('learningRateValue');
+        const speedSlider = document.getElementById('speed');
+        const speedValue = document.getElementById('speedValue');
+        const epochCounter = document.getElementById('epochCounter');
+        const accuracyDisplay = document.getElementById('accuracy');
+        const lossDisplay = document.getElementById('loss');
+        const featureSpaceCanvas = document.getElementById('featureSpace');
+        const metricsChartCanvas = document.getElementById('metricsChart');
+        const themeToggle = document.getElementById('themeToggle');
+        const gradientVisualizer = document.getElementById('gradientVisualizer');
+        const weight1Display = document.getElementById('weight1');
+        const weight2Display = document.getElementById('weight2');
+        const biasDisplay = document.getElementById('bias');
+        const confettiContainer = document.getElementById('confettiContainer');
+        const tooltip = document.getElementById('tooltip');
+
+        // Contexto de los canvas
+        const featureSpaceCtx = featureSpaceCanvas.getContext('2d');
+        
+        // Configuración de gráficos
+        let metricsChart;
+        
+        // Inicialización
+        function init() {
+            setupEventListeners();
+            generateData();
+            resetModel();
+            initializeCharts();
+            drawFeatureSpace();
+            setupGradientVisualizer();
+            updateModelInfoDisplay();
+        }
+
+        // Configuración de event listeners
+        function setupEventListeners() {
+            startBtn.addEventListener('click', toggleTraining);
+            resetBtn.addEventListener('click', resetSimulation);
+            
+            learningRateSlider.addEventListener('input', () => {
+                state.learningRate = parseFloat(learningRateSlider.value);
+                learningRateValue.textContent = state.learningRate.toFixed(3);
+            });
+            
+            speedSlider.addEventListener('input', () => {
+                state.simulationSpeed = parseFloat(speedSlider.value);
+                speedValue.textContent = state.simulationSpeed.toFixed(1);
+            });
+            
+            themeToggle.addEventListener('click', toggleTheme);
+            
+            // Tooltips para elementos con la clase has-tooltip
+            document.querySelectorAll('.has-tooltip').forEach(element => {
+                element.addEventListener('mouseenter', (e) => {
+                    const tooltipText = e.target.nextElementSibling.textContent;
+                    showTooltip(e, tooltipText);
+                });
+                
+                element.addEventListener('mouseleave', () => {
+                    hideTooltip();
+                });
+            });
+        }
+        
+        // Función para mostrar tooltip
+        function showTooltip(e, text) {
+            tooltip.textContent = text;
+            tooltip.style.opacity = '1';
+            tooltip.style.left = `${e.pageX + 10}px`;
+            tooltip.style.top = `${e.pageY + 10}px`;
+        }
+        
+        // Función para ocultar tooltip
+        function hideTooltip() {
+            tooltip.style.opacity = '0';
+        }
+        
+        // Función para cambiar entre tema claro y oscuro
+        function toggleTheme() {
+            state.darkTheme = !state.darkTheme;
+            
+            if (state.darkTheme) {
+                document.body.classList.add('dark-theme');
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            } else {
+                document.body.classList.remove('dark-theme');
+                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+            }
+            
+            // Actualizar gráficos con el nuevo tema
+            updateCharts();
+            drawFeatureSpace();
+        }
+
+        // Generación de datos - crear datos que permitan una alta precisión
+        function generateData() {
+            state.data.features = [];
+            state.data.labels = [];
+            state.data.testFeatures = [];
+            state.data.testLabels = [];
+            state.data.animatedPoints = [];
+            
+            // Crear datos bien separados para asegurar alta precisión
+            for (let i = 0; i < 100; i++) {
+                let x, y, label;
+                
+                // Decidir la clase
+                if (Math.random() < 0.5) {
+                    // Clase A - Cluster en la esquina inferior izquierda
+                    label = 0;
+                    x = 0.2 + Math.random() * 0.2;
+                    y = 0.2 + Math.random() * 0.2;
+                    
+                    // Añadir algunos puntos dispersos
+                    if (Math.random() < 0.08) {
+                        x = 0.3 + Math.random() * 0.4;
+                        y = 0.3 + Math.random() * 0.4;
+                    }
+                } else {
+                    // Clase B - Cluster en la esquina superior derecha
+                    label = 1;
+                    x = 0.6 + Math.random() * 0.2;
+                    y = 0.6 + Math.random() * 0.2;
+                    
+                    // Añadir algunos puntos dispersos
+                    if (Math.random() < 0.08) {
+                        x = 0.3 + Math.random() * 0.4;
+                        y = 0.3 + Math.random() * 0.4;
+                    }
+                }
+                
+                // Conjunto de entrenamiento (70%)
+                if (i < 70) {
+                    state.data.features.push([x, y]);
+                    state.data.labels.push(label);
+                    
+                    // Añadir punto para animación
+                    state.data.animatedPoints.push({
+                        x: x,
+                        y: y,
+                        label: label,
+                        scale: 0,
+                        opacity: 0,
+                        correct: null
+                    });
+                } else {
+                    // Conjunto de prueba (30%)
+                    state.data.testFeatures.push([x, y]);
+                    state.data.testLabels.push(label);
+                }
+            }
+            
+            // Animar la aparición de los puntos
+            animateDataPoints();
+        }
+        
+        // Animar la aparición de los puntos de datos
+        function animateDataPoints() {
+            state.data.animatedPoints.forEach((point, index) => {
+                gsap.to(point, {
+                    scale: 1,
+                    opacity: 1,
+                    delay: index * 0.01,
+                    duration: 0.5,
+                    ease: "back.out(1.7)"
+                });
+            });
+        }
+
+        // Reiniciar modelo
+        function resetModel() {
+            state.model.weights = [Math.random() - 0.5, Math.random() - 0.5];
+            state.model.bias = Math.random() - 0.5;
+            state.model.gradientHistory = [];
+            state.epoch = 0;
+            state.metrics.history.accuracy = [];
+            state.metrics.history.loss = [];
+            state.metrics.currentAccuracy = 0;
+            state.metrics.currentLoss = 0;
+            state.animation.lastCorrectPoint = null;
+            state.animation.lastIncorrectPoint = null;
+            
+            updateMetricsDisplay(0, 0);
+            updateModelInfoDisplay();
+            epochCounter.textContent = state.epoch;
+            
+            // Limpiar visualizador de gradiente
+            while (gradientVisualizer.firstChild) {
+                gradientVisualizer.removeChild(gradientVisualizer.firstChild);
+            }
+        }
+        
+        // Configurar visualizador de gradiente
+        function setupGradientVisualizer() {
+            // Limpiar visualizador
+            while (gradientVisualizer.firstChild) {
+                gradientVisualizer.removeChild(gradientVisualizer.firstChild);
+            }
+        }
+        
+        // Actualizar visualización de información del modelo
+        function updateModelInfoDisplay() {
+            weight1Display.textContent = state.model.weights[0].toFixed(2);
+            weight2Display.textContent = state.model.weights[1].toFixed(2);
+            biasDisplay.textContent = state.model.bias.toFixed(2);
+            
+            // Animar cambios
+            gsap.from([weight1Display, weight2Display, biasDisplay], {
+                color: "#ff6b6b",
+                duration: 0.5,
+                stagger: 0.1
+            });
+        }
+
+        // Inicialización de gráficos
+        function initializeCharts() {
+            // Configuración de colores adaptables al tema
+            const getChartColors = () => {
+                return {
+                    accuracy: {
+                        border: state.darkTheme ? '#51cf66' : '#2ecc71',
+                        background: state.darkTheme ? 'rgba(81, 207, 102, 0.2)' : 'rgba(46, 204, 113, 0.1)'
+                    },
+                    loss: {
+                        border: state.darkTheme ? '#ff6b6b' : '#e74c3c',
+                        background: state.darkTheme ? 'rgba(255, 107, 107, 0.2)' : 'rgba(231, 76, 60, 0.1)'
+                    },
+                    grid: state.darkTheme ? '#495057' : '#ddd',
+                    text: state.darkTheme ? '#f1f3f5' : '#333'
+                };
+            };
+            
+            const colors = getChartColors();
+            
+            // Gráfico de métricas
+            metricsChart = new Chart(metricsChartCanvas, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Precisión',
+                            data: [],
+                            borderColor: colors.accuracy.border,
+                            backgroundColor: colors.accuracy.background,
+                            tension: 0.3,
+                            fill: true,
+                            pointBackgroundColor: colors.accuracy.border,
+                            pointRadius: 3,
+                            pointHoverRadius: 5
+                        },
+                        {
+                            label: 'Pérdida',
+                            data: [],
+                            borderColor: colors.loss.border,
+                            backgroundColor: colors.loss.background,
+                            tension: 0.3,
+                            fill: true,
+                            yAxisID: 'y1',
+                            pointBackgroundColor: colors.loss.border,
+                            pointRadius: 3,
+                            pointHoverRadius: 5
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: colors.text,
+                                font: {
+                                    family: '"Roboto", sans-serif',
+                                    weight: 500
+                                },
+                                padding: 15,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: state.darkTheme ? '#343a40' : 'rgba(255, 255, 255, 0.9)',
+                            titleColor: state.darkTheme ? '#f1f3f5' : '#333',
+                            bodyColor: state.darkTheme ? '#ced4da' : '#666',
+                            borderColor: state.darkTheme ? '#495057' : '#ddd',
+                            borderWidth: 1,
+                            padding: 10,
+                            cornerRadius: 8,
+                            titleFont: {
+                                family: '"Roboto", sans-serif',
+                                weight: 600
+                            },
+                            bodyFont: {
+                                family: '"Roboto", sans-serif'
+                            },
+                            displayColors: true,
+                            boxPadding: 5,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        const value = context.parsed.y;
+                                        label += context.datasetIndex === 0 ? 
+                                            (value * 100).toFixed(1) + '%' : 
+                                            value.toFixed(4);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: colors.grid,
+                                borderColor: colors.grid
+                            },
+                            ticks: {
+                                color: colors.text,
+                                font: {
+                                    family: '"Roboto", sans-serif'
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            max: 1,
+                            grid: {
+                                color: colors.grid,
+                                borderColor: colors.grid
+                            },
+                            ticks: {
+                                color: colors.text,
+                                font: {
+                                    family: '"Roboto", sans-serif'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Precisión',
+                                color: colors.text,
+                                font: {
+                                    family: '"Roboto", sans-serif',
+                                    weight: 500
+                                }
+                            }
+                        },
+                        y1: {
+                            beginAtZero: true,
+                            max: 2,
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false,
+                                color: colors.grid,
+                                borderColor: colors.grid
+                            },
+                            ticks: {
+                                color: colors.text,
+                                font: {
+                                    family: '"Roboto", sans-serif'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Pérdida',
+                                color: colors.text,
+                                font: {
+                                    family: '"Roboto", sans-serif',
+                                    weight: 500
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 800,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+
+        // Visualización del espacio de características
+        function drawFeatureSpace() {
+            const width = featureSpaceCanvas.width;
+            const height = featureSpaceCanvas.height;
+            
+            // Limpiar canvas
+            featureSpaceCtx.clearRect(0, 0, width, height);
+            
+            // Dibujar cuadrícula
+            featureSpaceCtx.strokeStyle = state.darkTheme ? '#495057' : '#ddd';
+            featureSpaceCtx.lineWidth = 0.5;
+            
+            for (let i = 0; i <= 10; i++) {
+                const pos = i * (width / 10);
+                
+                // Líneas verticales
+                featureSpaceCtx.beginPath();
+                featureSpaceCtx.moveTo(pos, 0);
+                featureSpaceCtx.lineTo(pos, height);
+                featureSpaceCtx.stroke();
+                
+                // Líneas horizontales
+                featureSpaceCtx.beginPath();
+                featureSpaceCtx.moveTo(0, pos);
+                featureSpaceCtx.lineTo(width, pos);
+                featureSpaceCtx.stroke();
+            }
+            
+            // Dibujar frontera de decisión
+            if (state.epoch > 0) {
+                drawDecisionBoundary();
+            }
+            
+            // Dibujar puntos de datos con animación
+            state.data.animatedPoints.forEach((point, index) => {
+                const x = point.x;
+                const y = point.y;
+                const label = point.label;
+                const scale = point.scale;
+                const opacity = point.opacity;
+                
+                // Colores base para cada clase
+                const classAColor = state.darkTheme ? '#ff6b6b' : '#e74c3c';
+                const classBColor = state.darkTheme ? '#4dabf7' : '#3498db';
+                
+                // Determinar color basado en la clase y si la predicción es correcta
+                let fillColor;
+                if (point.correct === true) {
+                    fillColor = state.darkTheme ? '#51cf66' : '#2ecc71'; // Verde para correctos
+                } else if (point.correct === false) {
+                    fillColor = state.darkTheme ? '#ff6b6b' : '#e74c3c'; // Rojo para incorrectos
+                } else {
+                    fillColor = label === 0 ? classAColor : classBColor;
+                }
+                
+                // Dibujar punto con escala y opacidad animadas
+                featureSpaceCtx.fillStyle = fillColor;
+                featureSpaceCtx.globalAlpha = opacity;
+                featureSpaceCtx.beginPath();
+                featureSpaceCtx.arc(x * width, y * height, 5 * scale, 0, 2 * Math.PI);
+                featureSpaceCtx.fill();
+                featureSpaceCtx.globalAlpha = 1.0;
+                
+                // Dibujar efecto de pulso para el último punto correcto/incorrecto
+                if (state.animation.lastCorrectPoint && state.animation.lastCorrectPoint.index === index) {
+                    featureSpaceCtx.strokeStyle = state.darkTheme ? '#51cf66' : '#2ecc71';
+                    featureSpaceCtx.lineWidth = 2;
+                    featureSpaceCtx.beginPath();
+                    featureSpaceCtx.arc(x * width, y * height, 8, 0, 2 * Math.PI);
+                    featureSpaceCtx.stroke();
+                }
+                
+                if (state.animation.lastIncorrectPoint && state.animation.lastIncorrectPoint.index === index) {
+                    featureSpaceCtx.strokeStyle = state.darkTheme ? '#ff6b6b' : '#e74c3c';
+                    featureSpaceCtx.lineWidth = 2;
+                    featureSpaceCtx.beginPath();
+                    featureSpaceCtx.arc(x * width, y * height, 8, 0, 2 * Math.PI);
+                    featureSpaceCtx.stroke();
+                }
+            });
+            
+            // Visualizar gradiente si hay suficientes épocas
+            if (state.model.gradientHistory.length > 0) {
+                visualizeGradient();
+            }
+        }
+
+        // Dibujar frontera de decisión
+        function drawDecisionBoundary() {
+            const width = featureSpaceCanvas.width;
+            const height = featureSpaceCanvas.height;
+            
+            // Crear grid para la frontera de decisión
+            const resolution = 40;
+            const gridSize = width / resolution;
+            
+            // Color de la frontera de decisión adaptado al tema
+            const boundaryColor = state.darkTheme ? 
+                `rgba(200, 200, 200, ${state.animation.decisionBoundaryOpacity})` : 
+                `rgba(0, 0, 0, ${state.animation.decisionBoundaryOpacity})`;
+            
+            featureSpaceCtx.fillStyle = boundaryColor;
+            
+            for (let x = 0; x < resolution; x++) {
+                for (let y = 0; y < resolution; y++) {
+                    const featureX = x / resolution;
+                    const featureY = y / resolution;
+                    
+                    // Calcular predicción
+                    const prediction = predict([featureX, featureY]);
+                    
+                    // Dibujar frontera alrededor de 0.5
+                    if (prediction > 0.45 && prediction < 0.55) {
+                        featureSpaceCtx.fillRect(
+                            x * gridSize, 
+                            y * gridSize, 
+                            gridSize, 
+                            gridSize
+                        );
+                    }
+                }
+            }
+            
+            // Animar la opacidad de la frontera de decisión
+            if (state.isTraining) {
+                gsap.to(state.animation, {
+                    decisionBoundaryOpacity: 0.3,
+                    duration: 0.5,
+                    yoyo: true,
+                    repeat: 1
+                });
+            }
+        }
+        
+        // Visualizar el gradiente
+        function visualizeGradient() {
+            // Limpiar visualizador de gradiente
+            while (gradientVisualizer.firstChild) {
+                gradientVisualizer.removeChild(gradientVisualizer.firstChild);
+            }
+            
+            const width = gradientVisualizer.clientWidth;
+            const height = gradientVisualizer.clientHeight;
+            
+            // Crear un fondo con cuadrícula para el visualizador
+            const gridBackground = document.createElement('div');
+            gridBackground.style.position = 'absolute';
+            gridBackground.style.top = '0';
+            gridBackground.style.left = '0';
+            gridBackground.style.width = '100%';
+            gridBackground.style.height = '100%';
+            gridBackground.style.backgroundImage = `linear-gradient(to right, ${state.darkTheme ? '#495057' : '#ddd'} 1px, transparent 1px), 
+                                                  linear-gradient(to bottom, ${state.darkTheme ? '#495057' : '#ddd'} 1px, transparent 1px)`;
+            gridBackground.style.backgroundSize = '20px 20px';
+            gridBackground.style.opacity = '0.3';
+            gradientVisualizer.appendChild(gridBackground);
+            
+            // Crear un punto central
+            const centerPoint = document.createElement('div');
+            centerPoint.style.position = 'absolute';
+            centerPoint.style.width = '8px';
+            centerPoint.style.height = '8px';
+            centerPoint.style.borderRadius = '50%';
+            centerPoint.style.backgroundColor = state.darkTheme ? '#f1f3f5' : '#333';
+            centerPoint.style.top = `${height / 2 - 4}px`;
+            centerPoint.style.left = `${width / 2 - 4}px`;
+            centerPoint.style.zIndex = '2';
+            gradientVisualizer.appendChild(centerPoint);
+            
+            // Animar la aparición del punto central
+            gsap.from(centerPoint, {
+                scale: 0,
+                opacity: 0,
+                duration: 0.5,
+                ease: "elastic.out(1, 0.5)"
+            });
+            
+            // Mostrar historial de gradientes con opacidad decreciente
+            state.model.gradientHistory.forEach((gradient, index) => {
+                const opacity = 0.3 + (0.7 * index / state.model.gradientHistory.length);
+                const gradientColor = state.darkTheme ? 
+                    `rgba(77, 171, 247, ${opacity})` : 
+                    `rgba(52, 152, 219, ${opacity})`;
+                
+                // Crear flecha de gradiente
+                const arrow = document.createElement('div');
+                arrow.style.position = 'absolute';
+                arrow.style.width = '30px';
+                arrow.style.height = '3px';
+                arrow.style.backgroundColor = gradientColor;
+                arrow.style.top = `${height / 2}px`;
+                arrow.style.left = `${width / 2}px`;
+                arrow.style.transformOrigin = '0 0';
+                arrow.style.zIndex = index + 3;
+                arrow.style.boxShadow = state.darkTheme ? '0 0 5px rgba(77, 171, 247, 0.5)' : '0 0 5px rgba(52, 152, 219, 0.3)';
+                
+                // Calcular ángulo y longitud basados en los pesos
+                const angle = Math.atan2(gradient.weights[1], gradient.weights[0]);
+                const magnitude = Math.sqrt(
+                    gradient.weights[0] * gradient.weights[0] + 
+                    gradient.weights[1] * gradient.weights[1]
+                );
+                
+                // Normalizar longitud
+                const maxLength = width / 3;
+                const arrowLength = Math.min(magnitude * 15, maxLength);
+                
+                // Aplicar transformación
+                arrow.style.transform = `rotate(${angle}rad) scaleX(${arrowLength / 30})`;
+                
+                // Añadir punta de flecha
+                const arrowHead = document.createElement('div');
+                arrowHead.style.position = 'absolute';
+                arrowHead.style.width = '0';
+                arrowHead.style.height = '0';
+                arrowHead.style.borderTop = '6px solid transparent';
+                arrowHead.style.borderBottom = '6px solid transparent';
+                arrowHead.style.borderLeft = `10px solid ${gradientColor}`;
+                arrowHead.style.top = '-4.5px';
+                arrowHead.style.left = `${arrowLength}px`;
+                
+                arrow.appendChild(arrowHead);
+                gradientVisualizer.appendChild(arrow);
+                
+                // Añadir etiqueta con el valor del gradiente si es el último
+                if (index === state.model.gradientHistory.length - 1) {
+                    const label = document.createElement('div');
+                    label.style.position = 'absolute';
+                    label.style.backgroundColor = state.darkTheme ? '#343a40' : 'rgba(255, 255, 255, 0.9)';
+                    label.style.color = state.darkTheme ? '#f1f3f5' : '#333';
+                    label.style.padding = '3px 6px';
+                    label.style.borderRadius = '4px';
+                    label.style.fontSize = '10px';
+                    label.style.fontWeight = 'bold';
+                    label.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+                    label.style.top = `${height / 2 + 10}px`;
+                    label.style.left = `${width / 2 + arrowLength * Math.cos(angle)}px`;
+                    label.style.transform = 'translate(-50%, 0)';
+                    label.style.zIndex = '10';
+                    label.textContent = `Δw: [${gradient.weights[0].toFixed(2)}, ${gradient.weights[1].toFixed(2)}]`;
+                    gradientVisualizer.appendChild(label);
+                    
+                    // Animar la aparición de la etiqueta
+                    gsap.from(label, {
+                        y: -10,
+                        opacity: 0,
+                        duration: 0.5,
+                        delay: 0.2,
+                        ease: "power2.out"
+                    });
+                }
+                
+                // Animar la aparición de la flecha
+                gsap.from(arrow, {
+                    opacity: 0,
+                    scaleX: 0,
+                    duration: 0.5,
+                    delay: index * 0.1,
+                    ease: "back.out(1.7)"
+                });
+            });
+        }
+
+        // Predicción del modelo
+        function predict(feature) {
+            const [x, y] = feature;
+            const [w1, w2] = state.model.weights;
+            const b = state.model.bias;
+            
+            // Modelo logístico simple
+            const z = w1 * x + w2 * y + b;
+            return sigmoid(z);
+        }
+
+        // Función sigmoide
+        function sigmoid(z) {
+            return 1 / (1 + Math.exp(-z));
+        }
+
+        // Toggle para iniciar/detener entrenamiento
+        function toggleTraining() {
+            state.isTraining = !state.isTraining;
+            
+            if (state.isTraining) {
+                startBtn.textContent = 'Pausar Entrenamiento';
+                startBtn.classList.add('paused');
+                trainStep();
+            } else {
+                startBtn.textContent = 'Iniciar Entrenamiento';
+                startBtn.classList.remove('paused');
+            }
+        }
+
+        // Función para generar una curva de aprendizaje predeterminada
+        function getTargetAccuracyForEpoch(epoch) {
+            const { startAccuracy, midpoint, steepness } = state.learningCurve;
+            const growth = state.targetAccuracy - startAccuracy;
+            
+            // Función logística para modelar la curva de aprendizaje
+            const accuracyGrowth = growth * (1 / (1 + Math.exp(-steepness * (epoch - midpoint))));
+            const currentTargetAccuracy = startAccuracy + accuracyGrowth;
+            
+            // Asegurar que en la última época lleguemos exactamente a 97.6%
+            if (epoch >= state.maxEpochs - 1) {
+                return state.targetAccuracy;
+            }
+            
+            return currentTargetAccuracy;
+        }
+
+        // Paso de entrenamiento
+        function trainStep() {
+            if (!state.isTraining) return;
+            
+            // Incrementar época
+            state.epoch++;
+            epochCounter.textContent = state.epoch;
+            
+            // Animar contador de época
+            gsap.from(epochCounter, {
+                scale: 1.2,
+                duration: 0.3,
+                ease: "power2.out"
+            });
+            
+            // Calcular la precisión objetivo para esta época según nuestra curva predefinida
+            const targetAccuracyForThisEpoch = getTargetAccuracyForEpoch(state.epoch);
+            
+            // Ajustar los pesos del modelo para alcanzar esta precisión objetivo
+            adjustModelWeights(targetAccuracyForThisEpoch);
+            
+            // Calcular pérdida simulada (disminuye a medida que aumenta la precisión)
+            const loss = Math.max(0.05, 2 * (1 - targetAccuracyForThisEpoch));
+            
+            // Almacenar métricas
+            state.metrics.history.accuracy.push(targetAccuracyForThisEpoch);
+            state.metrics.history.loss.push(loss);
+            state.metrics.currentAccuracy = targetAccuracyForThisEpoch;
+            state.metrics.currentLoss = loss;
+            
+            // Actualizar visualizaciones
+            updateMetricsDisplay(targetAccuracyForThisEpoch, loss);
+            updateModelInfoDisplay();
+            updateCharts();
+            
+            // Evaluar y animar puntos
+            evaluateAndAnimatePoints();
+            
+            // Dibujar espacio de características
+            drawFeatureSpace();
+            
+            // Lanzar confeti cuando se alcanza un hito de precisión
+            if (state.metrics.currentAccuracy >= 0.9 && state.metrics.history.accuracy.length > 1 && state.metrics.history.accuracy[state.metrics.history.accuracy.length - 2] < 0.9) {
+                createConfetti(20);
+            }
+            
+            if (state.metrics.currentAccuracy >= 0.95 && state.metrics.history.accuracy.length > 1 && state.metrics.history.accuracy[state.metrics.history.accuracy.length - 2] < 0.95) {
+                createConfetti(40);
+            }
+            
+            // Continuar entrenamiento
+            if (state.epoch < state.maxEpochs) {
+                setTimeout(trainStep, 100 / state.simulationSpeed);
+            } else {
+                state.isTraining = false;
+                startBtn.textContent = 'Iniciar Entrenamiento';
+                startBtn.classList.remove('paused');
+                createConfetti(60); // Confeti final
+            }
+        }
+        
+        // Evaluar y animar puntos
+        function evaluateAndAnimatePoints() {
+            // Seleccionar un punto aleatorio para animar
+            const randomIndex = Math.floor(Math.random() * state.data.features.length);
+            const feature = state.data.features[randomIndex];
+            const trueLabel = state.data.labels[randomIndex];
+            
+            // Predecir
+            const prediction = predict(feature);
+            const predictedLabel = prediction > 0.5 ? 1 : 0;
+            const isCorrect = predictedLabel === trueLabel;
+            
+            // Actualizar estado del punto
+            state.data.animatedPoints[randomIndex].correct = isCorrect;
+            
+            // Animar punto
+            gsap.to(state.data.animatedPoints[randomIndex], {
+                scale: 1.5,
+                duration: 0.3,
+                yoyo: true,
+                repeat: 1
+            });
+            
+            // Actualizar último punto correcto/incorrecto
+            if (isCorrect) {
+                state.animation.lastCorrectPoint = { index: randomIndex };
+            } else {
+                state.animation.lastIncorrectPoint = { index: randomIndex };
+            }
+        }
+        
+        // Crear efecto de confeti
+        function createConfetti(count) {
+            // Limpiar confeti anterior
+            confettiContainer.innerHTML = '';
+            
+            for (let i = 0; i < count; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                
+                // Posición aleatoria
+                const startX = Math.random() * window.innerWidth;
+                confetti.style.left = `${startX}px`;
+                confetti.style.top = `${window.innerHeight}px`;
+                
+                // Forma aleatoria
+                const shapes = ['circle', 'square', 'triangle'];
+                const shape = shapes[Math.floor(Math.random() * shapes.length)];
+                
+                if (shape === 'circle') {
+                    confetti.style.borderRadius = '50%';
+                } else if (shape === 'triangle') {
+                    confetti.style.width = '0';
+                    confetti.style.height = '0';
+                    confetti.style.backgroundColor = 'transparent';
+                    confetti.style.borderLeft = '5px solid transparent';
+                    confetti.style.borderRight = '5px solid transparent';
+                    confetti.style.borderBottom = '10px solid var(--primary-color)';
+                }
+                
+                // Retraso aleatorio
+                confetti.style.animationDelay = `${Math.random() * 2}s`;
+                
+                confettiContainer.appendChild(confetti);
+                
+                // Eliminar después de la animación
+                setTimeout(() => {
+                    if (confetti.parentNode === confettiContainer) {
+                        confettiContainer.removeChild(confetti);
+                    }
+                }, 4000);
+            }
+        }
+
+        // Ajustar los pesos del modelo para lograr una precisión específica
+        function adjustModelWeights(targetAccuracy) {
+            // Ajustar los pesos para separar mejor las clases
+            // Para simplificar, utilizamos una estrategia de ajuste directo
+            // en lugar de descenso de gradiente real
+            
+            // Determinar la dirección que mejor separa las clases
+            let sumClassA = [0, 0];
+            let sumClassB = [0, 0];
+            let countA = 0;
+            let countB = 0;
+            
+            state.data.features.forEach((feature, idx) => {
+                if (state.data.labels[idx] === 0) {
+                    sumClassA[0] += feature[0];
+                    sumClassA[1] += feature[1];
+                    countA++;
+                } else {
+                    sumClassB[0] += feature[0];
+                    sumClassB[1] += feature[1];
+                    countB++;
+                }
+            });
+            
+            // Calcular centros de cada clase
+            const centerA = [sumClassA[0] / countA, sumClassA[1] / countA];
+            const centerB = [sumClassB[0] / countB, sumClassB[1] / countB];
+            
+            // Vector desde clase A a clase B
+            const direction = [
+                centerB[0] - centerA[0],
+                centerB[1] - centerA[1]
+            ];
+            
+            // Normalizar
+            const magnitude = Math.sqrt(direction[0] * direction[0] + direction[1] * direction[1]);
+            const normalizedDirection = [
+                direction[0] / magnitude,
+                direction[1] / magnitude
+            ];
+            
+            // Guardar pesos anteriores para calcular el gradiente
+            const oldWeights = [...state.model.weights];
+            const oldBias = state.model.bias;
+            
+            // Calcular tasa de aprendizaje adaptativa basada en la época actual
+            // Disminuye gradualmente para estabilizar el aprendizaje
+            const adaptiveLearningRate = state.learningRate * (1 - 0.5 * (state.epoch / state.maxEpochs));
+            
+            // Ajustar los pesos basado en la dirección y la precisión objetivo
+            // Con una mayor precisión objetivo, necesitamos una separación más clara
+            const strength = 2.0 + (targetAccuracy - 0.5) * 6;
+            
+            // Añadir algo de ruido para simular la naturaleza estocástica del descenso de gradiente
+            // El ruido disminuye con el tiempo para permitir una convergencia más precisa
+            const noiseScale = Math.max(0, 1 - state.epoch / 30);
+            const noise = noiseScale * 0.1 * (Math.random() - 0.5);
+            
+            // Calcular los nuevos pesos con momentum para suavizar las actualizaciones
+            // Momentum simula la inercia en el movimiento de los pesos
+            const momentum = 0.8;
+            const rawWeightUpdate = [
+                normalizedDirection[0] * strength * adaptiveLearningRate + noise,
+                normalizedDirection[1] * strength * adaptiveLearningRate + noise
+            ];
+            
+            // Aplicar momentum si hay gradientes previos
+            if (state.model.gradientHistory.length > 0) {
+                const prevGradient = state.model.gradientHistory[state.model.gradientHistory.length - 1];
+                state.model.weights = [
+                    oldWeights[0] + rawWeightUpdate[0] + momentum * prevGradient.weights[0],
+                    oldWeights[1] + rawWeightUpdate[1] + momentum * prevGradient.weights[1]
+                ];
+            } else {
+                state.model.weights = [
+                    normalizedDirection[0] * strength + noise,
+                    normalizedDirection[1] * strength + noise
+                ];
+            }
+            
+            // Ajustar el bias para que la frontera esté entre las dos clases
+            const midpoint = [
+                (centerA[0] + centerB[0]) / 2,
+                (centerA[1] + centerB[1]) / 2
+            ];
+            
+            state.model.bias = -(state.model.weights[0] * midpoint[0] + state.model.weights[1] * midpoint[1]);
+            
+            // Calcular el gradiente (cambio en los pesos)
+            const gradient = {
+                weights: [
+                    state.model.weights[0] - oldWeights[0],
+                    state.model.weights[1] - oldWeights[1]
+                ],
+                bias: state.model.bias - oldBias,
+                magnitude: Math.sqrt(
+                    Math.pow(state.model.weights[0] - oldWeights[0], 2) + 
+                    Math.pow(state.model.weights[1] - oldWeights[1], 2)
+                ),
+                learningRate: adaptiveLearningRate
+            };
+            
+            // Guardar el gradiente para visualización
+            state.model.gradientHistory.push(gradient);
+            
+            // Limitar el historial de gradientes para no consumir demasiada memoria
+            if (state.model.gradientHistory.length > 5) {
+                state.model.gradientHistory.shift();
+            }
+        }
+
+        // Actualizar visualización de métricas
+        function updateMetricsDisplay(accuracy, loss) {
+            // Animar cambio de valores
+            gsap.to({
+                val: parseFloat(accuracyDisplay.textContent) / 100 || 0
+            }, {
+                val: accuracy,
+                duration: 0.5,
+                onUpdate: function() {
+                    accuracyDisplay.textContent = (this.targets()[0].val * 100).toFixed(1) + '%';
+                }
+            });
+            
+            gsap.to({
+                val: parseFloat(lossDisplay.textContent) || 0
+            }, {
+                val: loss,
+                duration: 0.5,
+                onUpdate: function() {
+                    lossDisplay.textContent = this.targets()[0].val.toFixed(4);
+                }
+            });
+            
+            // Cambiar color basado en el valor
+            if (accuracy >= 0.95) {
+                accuracyDisplay.style.color = state.darkTheme ? '#51cf66' : '#27ae60';
+            } else if (accuracy >= 0.8) {
+                accuracyDisplay.style.color = state.darkTheme ? '#fcc419' : '#f39c12';
+            } else {
+                accuracyDisplay.style.color = '';
+            }
+            
+            if (loss <= 0.1) {
+                lossDisplay.style.color = state.darkTheme ? '#51cf66' : '#27ae60';
+            } else if (loss <= 0.3) {
+                lossDisplay.style.color = state.darkTheme ? '#fcc419' : '#f39c12';
+            } else {
+                lossDisplay.style.color = '';
+            }
+        }
+
+        // Actualizar gráficos
+        function updateCharts() {
+            // Actualizar colores según el tema
+            const colors = {
+                accuracy: {
+                    border: state.darkTheme ? '#51cf66' : '#2ecc71',
+                    background: state.darkTheme ? 'rgba(81, 207, 102, 0.2)' : 'rgba(46, 204, 113, 0.1)',
+                    gradient: state.darkTheme ? 
+                        ['rgba(81, 207, 102, 0.7)', 'rgba(81, 207, 102, 0)'] : 
+                        ['rgba(46, 204, 113, 0.5)', 'rgba(46, 204, 113, 0)']
+                },
+                loss: {
+                    border: state.darkTheme ? '#ff6b6b' : '#e74c3c',
+                    background: state.darkTheme ? 'rgba(255, 107, 107, 0.2)' : 'rgba(231, 76, 60, 0.1)',
+                    gradient: state.darkTheme ? 
+                        ['rgba(255, 107, 107, 0.7)', 'rgba(255, 107, 107, 0)'] : 
+                        ['rgba(231, 76, 60, 0.5)', 'rgba(231, 76, 60, 0)']
+                },
+                grid: state.darkTheme ? '#495057' : '#ddd',
+                text: state.darkTheme ? '#f1f3f5' : '#333'
+            };
+            
+            // Actualizar colores de los datasets
+            metricsChart.data.datasets[0].borderColor = colors.accuracy.border;
+            metricsChart.data.datasets[0].pointBackgroundColor = colors.accuracy.border;
+            
+            metricsChart.data.datasets[1].borderColor = colors.loss.border;
+            metricsChart.data.datasets[1].pointBackgroundColor = colors.loss.border;
+            
+            // Actualizar fondos con gradientes
+            metricsChart.data.datasets[0].backgroundColor = (context) => {
+                const chart = context.chart;
+                const {ctx, chartArea} = chart;
+                if (!chartArea) return colors.accuracy.background;
+                
+                // Crear gradiente
+                const gradient = ctx.createLinearGradient(
+                    0, chartArea.bottom, 0, chartArea.top
+                );
+                gradient.addColorStop(0, colors.accuracy.gradient[1]);
+                gradient.addColorStop(1, colors.accuracy.gradient[0]);
+                return gradient;
+            };
+            
+            metricsChart.data.datasets[1].backgroundColor = (context) => {
+                const chart = context.chart;
+                const {ctx, chartArea} = chart;
+                if (!chartArea) return colors.loss.background;
+                
+                // Crear gradiente
+                const gradient = ctx.createLinearGradient(
+                    0, chartArea.bottom, 0, chartArea.top
+                );
+                gradient.addColorStop(0, colors.loss.gradient[1]);
+                gradient.addColorStop(1, colors.loss.gradient[0]);
+                return gradient;
+            };
+            
+            // Actualizar colores de los ejes
+            metricsChart.options.scales.x.grid.color = colors.grid;
+            metricsChart.options.scales.x.ticks.color = colors.text;
+            metricsChart.options.scales.y.grid.color = colors.grid;
+            metricsChart.options.scales.y.ticks.color = colors.text;
+            metricsChart.options.scales.y.title.color = colors.text;
+            metricsChart.options.scales.y1.grid.color = colors.grid;
+            metricsChart.options.scales.y1.ticks.color = colors.text;
+            metricsChart.options.scales.y1.title.color = colors.text;
+            
+            // Actualizar colores de la leyenda
+            metricsChart.options.plugins.legend.labels.color = colors.text;
+            
+            // Actualizar colores del tooltip
+            metricsChart.options.plugins.tooltip.backgroundColor = state.darkTheme ? '#343a40' : 'rgba(255, 255, 255, 0.9)';
+            metricsChart.options.plugins.tooltip.titleColor = state.darkTheme ? '#f1f3f5' : '#333';
+            metricsChart.options.plugins.tooltip.bodyColor = state.darkTheme ? '#ced4da' : '#666';
+            metricsChart.options.plugins.tooltip.borderColor = state.darkTheme ? '#495057' : '#ddd';
+            
+            // Actualizar datos del gráfico de métricas
+            metricsChart.data.labels = Array.from({length: state.epoch}, (_, i) => i + 1);
+            metricsChart.data.datasets[0].data = state.metrics.history.accuracy;
+            metricsChart.data.datasets[1].data = state.metrics.history.loss;
+            
+            // Animar la actualización
+            metricsChart.update('none'); // Actualizar sin animación primero para evitar problemas
+            
+            // Animar el último punto añadido
+            if (state.metrics.history.accuracy.length > 0) {
+                const lastIndex = state.metrics.history.accuracy.length - 1;
+                
+                // Animar el último punto de precisión
+                gsap.from({
+                    scale: 1.5,
+                    opacity: 0
+                }, {
+                    scale: 1,
+                    opacity: 1,
+                    duration: 0.5,
+                    onUpdate: function() {
+                        // Actualizar el tamaño del punto
+                        metricsChart.data.datasets[0].pointRadius = Array(lastIndex).fill(3);
+                        metricsChart.data.datasets[0].pointRadius.push(this.targets()[0].scale * 5);
+                        
+                        // Actualizar la opacidad del punto
+                        metricsChart.data.datasets[0].pointBackgroundColor = Array(lastIndex).fill(colors.accuracy.border);
+                        const alpha = this.targets()[0].opacity;
+                        const lastColor = state.darkTheme ? 
+                            `rgba(81, 207, 102, ${alpha})` : 
+                            `rgba(46, 204, 113, ${alpha})`;
+                        metricsChart.data.datasets[0].pointBackgroundColor.push(lastColor);
+                        
+                        metricsChart.update('none');
+                    }
+                });
+                
+                // Animar el último punto de pérdida
+                gsap.from({
+                    scale: 1.5,
+                    opacity: 0
+                }, {
+                    scale: 1,
+                    opacity: 1,
+                    duration: 0.5,
+                    onUpdate: function() {
+                        // Actualizar el tamaño del punto
+                        metricsChart.data.datasets[1].pointRadius = Array(lastIndex).fill(3);
+                        metricsChart.data.datasets[1].pointRadius.push(this.targets()[0].scale * 5);
+                        
+                        // Actualizar la opacidad del punto
+                        metricsChart.data.datasets[1].pointBackgroundColor = Array(lastIndex).fill(colors.loss.border);
+                        const alpha = this.targets()[0].opacity;
+                        const lastColor = state.darkTheme ? 
+                            `rgba(255, 107, 107, ${alpha})` : 
+                            `rgba(231, 76, 60, ${alpha})`;
+                        metricsChart.data.datasets[1].pointBackgroundColor.push(lastColor);
+                        
+                        metricsChart.update('none');
+                    },
+                    onComplete: function() {
+                        // Restaurar todos los puntos a su tamaño normal
+                        metricsChart.data.datasets[0].pointRadius = 3;
+                        metricsChart.data.datasets[1].pointRadius = 3;
+                        metricsChart.data.datasets[0].pointBackgroundColor = colors.accuracy.border;
+                        metricsChart.data.datasets[1].pointBackgroundColor = colors.loss.border;
+                        metricsChart.update();
+                    }
+                });
+            } else {
+                metricsChart.update();
+            }
+        }
+
+        // Reiniciar simulación
+        function resetSimulation() {
+            state.isTraining = false;
+            startBtn.textContent = 'Iniciar Entrenamiento';
+            startBtn.classList.remove('paused');
+            
+            // Efecto de transición
+            gsap.to(featureSpaceCanvas, {
+                opacity: 0,
+                duration: 0.3,
+                onComplete: () => {
+                    generateData();
+                    resetModel();
+                    metricsChart.data.labels = [];
+                    metricsChart.data.datasets[0].data = [];
+                    metricsChart.data.datasets[1].data = [];
+                    metricsChart.update();
+                    drawFeatureSpace();
+                    
+                    gsap.to(featureSpaceCanvas, {
+                        opacity: 1,
+                        duration: 0.3
+                    });
+                }
+            });
+        }
+
+        // Iniciar la aplicación
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
