@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Hacking</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            height: 100vh;
+            gap: 5px;
+        }
+
+        .panel {
+            border: 1px solid #0f0;
+            padding: 10px;
+            overflow: hidden;
+            background-color: #000;
+            position: relative;
+        }
+
+        .panel-header {
+            border-bottom: 1px solid #0f0;
+            padding-bottom: 5px;
+            margin-bottom: 5px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .content {
+            height: calc(100% - 30px);
+            overflow-y: auto;
+            white-space: pre-wrap;
+            scrollbar-width: thin;
+            scrollbar-color: #0f0 #000;
+        }
+
+        /* Estilo de scrollbar para Chrome/Safari/Edge */
+        .content::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .content::-webkit-scrollbar-track {
+            background: #000;
+            border: 1px solid #0f0;
+        }
+
+        .content::-webkit-scrollbar-thumb {
+            background: #0f0;
+            border: 1px solid #0f0;
+        }
+
+        .content::-webkit-scrollbar-thumb:hover {
+            background: #00ff00;
+        }
+
+        .terminal-input {
+            display: flex;
+            position: absolute;
+            bottom: 10px;
+            width: calc(100% - 20px);
+        }
+
+        .terminal-input span {
+            color: #0f0;
+            margin-right: 5px;
+        }
+
+        .terminal-input input {
+            background-color: transparent;
+            border: none;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            width: 100%;
+            font-size: 1em;
+            outline: none;
+        }
+
+        .blink {
+            animation: blink-animation 1s steps(5, start) infinite;
+        }
+
+        @keyframes blink-animation {
+            to {
+                visibility: hidden;
+            }
+        }
+
+        .ip-list {
+            columns: 2;
+        }
+
+        #controls {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            z-index: 1000;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 5px;
+            border: 1px solid #0f0;
+            transition: opacity 0.5s;
+        }
+
+        #controls.hidden-controls {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        button {
+            background-color: #000;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 5px 10px;
+            margin: 2px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+        }
+
+        button:hover {
+            background-color: #030;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background-color: #030;
+            margin-top: 10px;
+            position: relative;
+            width: 100%;
+        }
+
+        .progress {
+            height: 100%;
+            background-color: #0f0;
+            width: 0%;
+            transition: width 0.5s;
+        }
+
+        .status-info {
+            margin-top: 5px;
+            font-size: 0.9em;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .flashing {
+            animation: flash-animation 0.5s infinite;
+        }
+
+        @keyframes flash-animation {
+            0% {
+                background-color: #000;
+            }
+
+            50% {
+                background-color: #300;
+            }
+
+            100% {
+                background-color: #000;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="panel" id="scan-panel">
+            <div class="panel-header">
+                <div>RECONOCIMIENTO DE RED (NMAP)</div>
+                <div class="status-info" id="scan-status">Inactivo</div>
+            </div>
+            <div class="content" id="scan-content"></div>
+            <div class="progress-bar">
+                <div class="progress" id="scan-progress"></div>
+            </div>
+        </div>
+        <div class="panel" id="brute-panel">
+            <div class="panel-header">
+                <div>FUERZA BRUTA SSH (HYDRA)</div>
+                <div class="status-info" id="brute-status">Inactivo</div>
+            </div>
+            <div class="content" id="brute-content"></div>
+            <div class="progress-bar">
+                <div class="progress" id="brute-progress"></div>
+            </div>
+        </div>
+        <div class="panel" id="exploit-panel">
+            <div class="panel-header">
+                <div>EXPLOTACIÓN (METASPLOIT)</div>
+                <div class="status-info" id="exploit-status">Inactivo</div>
+            </div>
+            <div class="content" id="exploit-content"></div>
+            <div class="progress-bar">
+                <div class="progress" id="exploit-progress"></div>
+            </div>
+        </div>
+        <div class="panel" id="shell-panel">
+            <div class="panel-header">
+                <div>SHELL INTERACTIVA</div>
+                <div class="status-info" id="shell-status">Inactivo</div>
+            </div>
+            <div class="content" id="shell-content"></div>
+            <div class="terminal-input hidden" id="shell-input-container">
+                <span>root@target:~# </span>
+                <input type="text" id="shell-input" autocomplete="off">
+            </div>
+        </div>
+    </div>
+
+    <div id="controls">
+        <button id="start-all">INICIAR SIMULACIÓN</button>
+        <button id="reset-all">REINICIAR</button>
+        <button id="toggle-controls">OCULTAR CONTROLES</button>
+    </div>
+
+    <script>
+        // Datos de simulación
+        const targetIp = "192.168.1.42";
+        const username = "admin";
+        const password = "P@ssw0rd123";
+
+        /**
+         * Genera un número aleatorio entre min y max (ambos incluidos)
+         * @param {number} min - Valor mínimo
+         * @param {number} max - Valor máximo
+         * @return {number} Número aleatorio
+         */
+        function randomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        /**
+         * Añade texto a un elemento con efecto de escritura
+         * @param {string} elementId - ID del elemento donde escribir
+         * @param {string} text - Texto a escribir
+         * @param {number} speed - Velocidad de escritura (ms)
+         * @param {function} callback - Función a ejecutar al terminar
+         */
+        function typeText(elementId, text, speed, callback) {
+            const element = document.getElementById(elementId);
+            let i = 0;
+
+            function typeChar() {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    element.scrollTop = element.scrollHeight;
+                    i++;
+                    setTimeout(typeChar, speed);
+                } else if (callback) {
+                    callback();
+                }
+            }
+
+            typeChar();
+        }
+
+        /**
+         * Actualiza la barra de progreso
+         * @param {string} elementId - ID de la barra de progreso
+         * @param {number} percent - Porcentaje de progreso (0-100)
+         */
+        function updateProgress(elementId, percent) {
+            document.getElementById(elementId).style.width = percent + "%";
+        }
+
+        /**
+         * Actualiza el estado de un panel
+         * @param {string} elementId - ID del elemento de estado
+         * @param {string} status - Texto de estado
+         * @param {boolean} isActive - Si está activo o no
+         */
+        function updateStatus(elementId, status, isActive) {
+            const element = document.getElementById(elementId);
+            element.textContent = status;
+            element.style.color = isActive ? "#ff0" : "#0f0";
+        }
+
+        /**
+         * Simula el escaneo de red con nmap
+         */
+        function simulateNmapScan() {
+            const content = document.getElementById("scan-content");
+            content.innerHTML = "";
+            updateStatus("scan-status", "Iniciando escaneo...", true);
+
+            // Iniciar comando
+            typeText("scan-content", `# nmap -sV -p- --script vuln ${targetIp}\n\nIniciando Nmap 7.92 ( https://nmap.org )\n`, 10, () => {
+                updateStatus("scan-status", "Escaneando puertos...", true);
+
+                // Simular progreso
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += randomInt(1, 5);
+                    if (progress > 100) progress = 100;
+                    updateProgress("scan-progress", progress);
+
+                    if (progress >= 100) {
+                        clearInterval(progressInterval);
+                        showScanResults();
+                    }
+                }, 200);
+
+                // Mostrar resultados completos
+                function showScanResults() {
+                    const ports = [
+                        { port: 22, service: "SSH", version: "OpenSSH 7.9p1" },
+                        { port: 80, service: "HTTP", version: "Apache httpd 2.4.46" },
+                        { port: 443, service: "HTTPS", version: "Apache httpd 2.4.46" },
+                        { port: 3306, service: "MySQL", version: "MySQL 5.7.33" },
+                        { port: 21, service: "FTP", version: "vsftpd 3.0.3" }
+                    ];
+
+                    let results = "Estadísticas de escaneo:\n";
+                    results += `Tiempo de escaneo: ${randomInt(30, 120)} segundos\n`;
+                    results += `Puertos escaneados: 65535\n`;
+                    results += `Puertos abiertos: ${ports.length}\n\n`;
+                    results += "PUERTOS ABIERTOS Y SERVICIOS:\n";
+
+                    ports.forEach(port => {
+                        results += `${port.port}/tcp\tabierto\t${port.service}\t${port.version}\n`;
+                    });
+
+                    results += "\nVULNERABILIDADES DETECTADAS:\n";
+                    results += "• CVE-2018-15473 (OpenSSH) - Enumeración de usuarios\n";
+                    results += "• CVE-2021-41773 (Apache) - Path traversal\n";
+                    results += "• CVE-2017-15906 (OpenSSH) - Denegación de servicio\n\n";
+
+                    typeText("scan-content", results, 5, () => {
+                        updateStatus("scan-status", "Escaneo completado", false);
+                    });
+                }
+            });
+        }
+
+        /**
+         * Simula un ataque de fuerza bruta SSH con Hydra
+         */
+        function simulateBruteForce() {
+            const content = document.getElementById("brute-content");
+            content.innerHTML = "";
+            updateStatus("brute-status", "Iniciando ataque...", true);
+
+            // Iniciar comando
+            typeText("brute-content", `# hydra -l ${username} -P /usr/share/wordlists/rockyou.txt ssh://${targetIp}\n\nHydra v9.2 (c) 2021 by van Hauser/THC & David Maciejak\n\nCargando lista de palabras: 14344394 entradas\n`, 10, () => {
+                updateStatus("brute-status", "Intentando contraseñas...", true);
+
+                // Simular progreso
+                let progress = 0;
+                let attempts = 0;
+                const progressInterval = setInterval(() => {
+                    progress += randomInt(1, 3);
+                    attempts += randomInt(5, 15);
+
+                    if (progress <= 90) {
+                        updateProgress("brute-progress", progress);
+
+                        if (attempts % 50 === 0) {
+                            const fakePassword = `Password${randomInt(100, 999)}`;
+                            typeText("brute-content", `[DATA] Intento ${attempts}: ${username} / ${fakePassword} - Fallido\n`, 5, null);
+                        }
+                    } else {
+                        clearInterval(progressInterval);
+                        finishBruteForce();
+                    }
+                }, 300);
+
+                // Mostrar éxito
+                function finishBruteForce() {
+                    updateProgress("brute-progress", 100);
+
+                    const successText = `[DATA] Intento ${attempts + 1}: ${username} / ${password}\n`;
+                    typeText("brute-content", successText, 100, () => {
+                        const resultText = `\n[ÉXITO] target ${targetIp} - login: "${username}" password: "${password}"\n\n1 de 1 objetivo completado con éxito\n`;
+                        typeText("brute-content", resultText, 10, () => {
+                            updateStatus("brute-status", "Contraseña encontrada", false);
+                        });
+                    });
+                }
+            });
+        }
+
+        /**
+         * Simula la explotación usando Metasploit
+         */
+        function simulateExploit() {
+            const content = document.getElementById("exploit-content");
+            content.innerHTML = "";
+            updateStatus("exploit-status", "Iniciando Metasploit...", true);
+
+            // Iniciar Metasploit
+            typeText("exploit-content", "# msfconsole\n\n", 10, () => {
+                const banner = `
+=[ metasploit v6.2.21-dev ]
++ -- --=[ 2264 exploits - 1189 auxiliar - 398 post ]
++ -- --=[ 870 payloads - 45 encoders - 11 nops ]
+                \n`;
+
+                typeText("exploit-content", banner, 1, () => {
+                    updateStatus("exploit-status", "Configurando exploit...", true);
+
+                    // Configurar exploit
+                    const setupCommands = `msf6 > use exploit/unix/ssh/ssh_enumusers\nmsf6 exploit(unix/ssh/ssh_enumusers) > set RHOSTS ${targetIp}\nRHOSTS => ${targetIp}\nmsf6 exploit(unix/ssh/ssh_enumusers) > set USERNAME ${username}\nUSERNAME => ${username}\nmsf6 exploit(unix/ssh/ssh_enumusers) > set PASSWORD ${password}\nPASSWORD => ${password}\nmsf6 exploit(unix/ssh/ssh_enumusers) > set PAYLOAD cmd/unix/reverse_netcat\nPAYLOAD => cmd/unix/reverse_netcat\nmsf6 exploit(unix/ssh/ssh_enumusers) > set LHOST 192.168.1.10\nLHOST => 192.168.1.10\nmsf6 exploit(unix/ssh/ssh_enumusers) > set LPORT 4444\nLPORT => 4444\n`;
+
+                    typeText("exploit-content", setupCommands, 10, () => {
+                        updateStatus("exploit-status", "Ejecutando exploit...", true);
+
+                        // Simular progreso
+                        let progress = 0;
+                        const progressInterval = setInterval(() => {
+                            progress += randomInt(5, 15);
+                            if (progress > 100) progress = 100;
+                            updateProgress("exploit-progress", progress);
+
+                            if (progress >= 100) {
+                                clearInterval(progressInterval);
+                                executeExploit();
+                            }
+                        }, 500);
+
+                        // Mostrar ejecución del exploit
+                        function executeExploit() {
+                            const exploitOutput = `msf6 exploit(unix/ssh/ssh_enumusers) > exploit\n\n[*] Iniciando handler para cmd/unix/reverse_netcat\n[*] Ejecutando exploit automático contra ${targetIp}\n[*] - Ejecutando contra dirección SSH en ${targetIp}:22...\n[*] - Intentando credenciales ${username}:${password}...\n[+] - Conexión exitosa\n[*] - Enviando payload...\n[*] - Shell remota configurada en ${targetIp}\n[*] Command shell session 1 opened (192.168.1.10:4444 -> ${targetIp}:43582)\n\n[+] Explotación exitosa\n`;
+
+                            typeText("exploit-content", exploitOutput, 10, () => {
+                                updateStatus("exploit-status", "Exploit exitoso", false);
+                            });
+                        }
+                    });
+                });
+            });
+        }
+
+        /**
+         * Simula una shell interactiva
+         */
+        function simulateShell() {
+            const content = document.getElementById("shell-content");
+            content.innerHTML = "";
+            const inputContainer = document.getElementById("shell-input-container");
+            const input = document.getElementById("shell-input");
+
+            updateStatus("shell-status", "Conectando...", true);
+
+            // Mostrar banner
+            const banner = `Conectando a ${targetIp}...\n\nSesión SSH establecida como root@${targetIp}\n\n██╗  ██╗ █████╗  ██████╗██╗  ██╗███████╗██████╗ \n██║  ██║██╔══██╗██╔════╝██║ ██╔╝██╔════╝██╔══██╗\n███████║███████║██║     █████╔╝ █████╗  ██║  ██║\n██╔══██║██╔══██║██║     ██╔═██╗ ██╔══╝  ██║  ██║\n██║  ██║██║  ██║╚██████╗██║  ██╗███████╗██████╔╝\n╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚═════╝ \n\n`;
+
+            typeText("shell-content", banner, 5, () => {
+                updateStatus("shell-status", "Conectado - Sesión activa", true);
+
+                // Información del sistema
+                const systemInfo = `Linux target 5.15.0-kali1-amd64 #1 SMP Debian 5.15.15-2kali1 (2022-01-31) x86_64\n\nÚltimo acceso: ${new Date().toLocaleString()}\nShell: /bin/bash\nID: uid=0(root) gid=0(root) grupos=0(root)\n\n`;
+
+                typeText("shell-content", systemInfo, 10, () => {
+                    // Mostrar prompt para que el usuario pueda interactuar
+                    inputContainer.classList.remove("hidden");
+                    input.focus();
+                });
+            });
+
+            // Manejar comandos de la shell
+            input.addEventListener("keypress", function (e) {
+                if (e.key === "Enter") {
+                    const command = this.value.trim();
+                    this.value = "";
+
+                    if (command) {
+                        // Agregar comando al historial
+                        content.innerHTML += `root@target:~# ${command}\n`;
+
+                        // Procesar comando
+                        processCommand(command);
+                    }
+                }
+            });
+
+            /**
+             * Procesa comandos de la shell simulada
+             * @param {string} command - Comando a procesar
+             */
+            function processCommand(command) {
+                let output = "";
+
+                // Comandos básicos simulados
+                switch (command.split(" ")[0]) {
+                    case "ls":
+                        output = "confidential_data.txt  passwords.db  system_configs/  users.log\n";
+                        break;
+                    case "cat":
+                        if (command.includes("confidential")) {
+                            output = "INFORMACIÓN CONFIDENCIAL DE LA EMPRESA\n===================================\n\nContraseñas de administrador:\n- Sistema principal: H4ck3dP@ss123\n- Base de datos: DbR00tPaSS\n- Servidor web: Adm1nW3b$3cure\n\nDatos de clientes: /var/data/clients.db\nRegistros financieros: /opt/finance/records.csv\n";
+                        } else {
+                            output = "Archivo no encontrado\n";
+                        }
+                        break;
+                    case "pwd":
+                        output = "/root\n";
+                        break;
+                    case "whoami":
+                        output = "root\n";
+                        break;
+                    case "id":
+                        output = "uid=0(root) gid=0(root) grupos=0(root)\n";
+                        break;
+                    case "ps":
+                        output = "  PID TTY          TIME CMD\n    1 ?        00:00:02 systemd\n  439 ?        00:00:01 sshd\n  512 ?        00:00:03 apache2\n  670 ?        00:00:00 mysqld\n 1024 pts/0    00:00:00 bash\n 1103 pts/0    00:00:00 ps\n";
+                        break;
+                    case "ifconfig":
+                    case "ip":
+                        output = `eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500\n        inet ${targetIp}  netmask 255.255.255.0  broadcast 192.168.1.255\n        inet6 fe80::216:3eff:fe2b:702f  prefixlen 64  scopeid 0x20<link>\n        ether 00:16:3e:2b:70:2f  txqueuelen 1000  (Ethernet)\n        RX packets 51237  bytes 62291436 (59.4 MiB)\n        RX errors 0  dropped 0  overruns 0  frame 0\n        TX packets 19064  bytes 1480476 (1.4 MiB)\n        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0\n\nlo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536\n        inet 127.0.0.1  netmask 255.0.0.0\n        inet6 ::1  prefixlen 128  scopeid 0x10<host>\n        loop  txqueuelen 1000  (Local Loopback)\n        RX packets 0  bytes 0 (0.0 B)\n        RX errors 0  dropped 0  overruns 0  frame 0\n        TX packets 0  bytes 0 (0.0 B)\n        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0\n`;
+                        break;
+                    case "find":
+                        output = "Buscando archivos...\n/etc/shadow\n/etc/passwd\n/var/www/html/admin/config.php\n/opt/secrets/keys.txt\n/home/user/hidden_data\n";
+                        break;
+                    case "help":
+                        output = "Comandos disponibles: ls, cat, pwd, whoami, id, ps, ifconfig, ip, find, help, clear\n";
+                        break;
+                    case "clear":
+                        content.innerHTML = "";
+                        return;
+                    default:
+                        output = `${command}: comando no encontrado\n`;
+                }
+
+                // Agregar salida al historial
+                setTimeout(() => {
+                    content.innerHTML += output;
+                    content.scrollTop = content.scrollHeight;
+                }, 300);
+            }
+        }
+
+        // Controles principales
+        document.getElementById("start-all").addEventListener("click", startAllSimulations);
+        document.getElementById("reset-all").addEventListener("click", resetAll);
+        document.getElementById("toggle-controls").addEventListener("click", toggleControls);
+
+        /**
+         * Alterna la visibilidad de los controles
+         */
+        function toggleControls() {
+            const controls = document.getElementById("controls");
+            const toggleButton = document.getElementById("toggle-controls");
+
+            if (controls.classList.contains("hidden-controls")) {
+                controls.classList.remove("hidden-controls");
+                toggleButton.textContent = "OCULTAR CONTROLES";
+            } else {
+                controls.classList.add("hidden-controls");
+                toggleButton.textContent = "MOSTRAR CONTROLES";
+
+                // Programar que se muestren nuevamente al mover el mouse a esa área
+                const showOnHover = function (e) {
+                    if (e.clientY > window.innerHeight - 100 && e.clientX < 200) {
+                        controls.classList.remove("hidden-controls");
+                        toggleButton.textContent = "OCULTAR CONTROLES";
+                        document.removeEventListener("mousemove", showOnHover);
+                    }
+                };
+
+                document.addEventListener("mousemove", showOnHover);
+            }
+        }
+
+        /**
+         * Inicia todas las simulaciones en paralelo
+         */
+        function startAllSimulations() {
+            resetAll();
+            document.getElementById("start-all").disabled = true;
+
+            // Ejecutar en paralelo
+            simulateNmapScan();
+            simulateBruteForce();
+            simulateExploit();
+            simulateShell();
+        }
+
+        /**
+         * Reinicia todos los paneles y simulaciones
+         */
+        function resetAll() {
+            // Limpiar contenidos
+            document.getElementById("scan-content").innerHTML = "";
+            document.getElementById("brute-content").innerHTML = "";
+            document.getElementById("exploit-content").innerHTML = "";
+            document.getElementById("shell-content").innerHTML = "";
+
+            // Reiniciar progreso
+            updateProgress("scan-progress", 0);
+            updateProgress("brute-progress", 0);
+            updateProgress("exploit-progress", 0);
+
+            // Reiniciar estados
+            updateStatus("scan-status", "Inactivo", false);
+            updateStatus("brute-status", "Inactivo", false);
+            updateStatus("exploit-status", "Inactivo", false);
+            updateStatus("shell-status", "Inactivo", false);
+
+            // Ocultar entrada de shell
+            document.getElementById("shell-input-container").classList.add("hidden");
+
+            // Habilitar botón de inicio
+            document.getElementById("start-all").disabled = false;
+        }
+
+        // Definir atajos de teclado
+        document.addEventListener("keydown", function (e) {
+            // Ctrl+Shift+H para iniciar
+            if (e.ctrlKey && e.shiftKey && e.key === "H") {
+                startAllSimulations();
+            }
+
+            // Ctrl+Shift+R para reiniciar
+            if (e.ctrlKey && e.shiftKey && e.key === "R") {
+                resetAll();
+            }
+
+            // Ctrl+Shift+C para mostrar/ocultar controles
+            if (e.ctrlKey && e.shiftKey && e.key === "C") {
+                toggleControls();
+            }
+        });
+
+        // Autostart opcional - descomentar para activar inicio automático
+        // setTimeout(startAllSimulations, 1000);
+    </script>
+</body>
+
+</html>

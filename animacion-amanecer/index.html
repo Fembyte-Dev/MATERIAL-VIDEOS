@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animación de Casa y Reloj</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .container {
+            position: relative;
+            width: 800px;
+            height: 500px;
+            overflow: hidden;
+        }
+
+        .sky {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transition: background-color 1s ease;
+        }
+
+        .sun {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: yellow;
+            border-radius: 50%;
+            box-shadow: 0 0 30px rgba(255, 255, 0, 0.8);
+            transition: all 1s ease;
+        }
+
+        .moon {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: #f5f5f5;
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+            display: none;
+            transition: all 1s ease;
+        }
+
+        .stars {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 2s infinite alternate;
+        }
+
+        @keyframes twinkle {
+            from { opacity: 0.2; }
+            to { opacity: 1; }
+        }
+
+        .ground {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 120px;
+            background: #3a7d44;
+            transition: background-color 1s ease;
+        }
+
+        .house {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 200px;
+            background-image: url('casa.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: bottom center;
+            transition: filter 1s ease;
+        }
+
+        .house-window {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: transparent;
+            transition: box-shadow 1s ease;
+        }
+
+        .left-window {
+            bottom: 70px;
+            left: 40px;
+        }
+
+        .right-window {
+            bottom: 70px;
+            right: 40px;
+        }
+
+        .clock-container {
+            position: absolute;
+            top: 50px;
+            right: 40px;
+            width: 100px;
+            height: 100px;
+            background: #f5f5f5;
+            border-radius: 50%;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .clock {
+            position: relative;
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid #333;
+        }
+
+        .hour-hand, .minute-hand {
+            position: absolute;
+            background: black;
+            transform-origin: bottom center;
+            top: 0;
+            left: 50%;
+            border-radius: 5px;
+        }
+
+        .hour-hand {
+            width: 4px;
+            height: 30px;
+            margin-left: -2px;
+            top: 15px;
+        }
+
+        .minute-hand {
+            width: 2px;
+            height: 38px;
+            margin-left: -1px;
+            top: 7px;
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 20px;
+        }
+
+        button {
+            padding: 10px 15px;
+            background: #3a7d44;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background: #2c613a;
+        }
+
+        .time-display {
+            margin-top: 10px;
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sky"></div>
+        <div class="sun"></div>
+        <div class="moon"></div>
+        <div class="stars"></div>
+        <div class="ground"></div>
+        <div class="house">
+            <div class="house-window left-window"></div>
+            <div class="house-window right-window"></div>
+        </div>
+        <div class="clock-container">
+            <div class="clock">
+                <div class="hour-hand"></div>
+                <div class="minute-hand"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="time-display">Hora: 6:00 AM</div>
+    
+    <div class="controls">
+        <button id="prev-hour">◀ Hora anterior</button>
+        <button id="next-hour">Hora siguiente ▶</button>
+    </div>
+
+    <script>
+        // Constantes y variables principales
+        const timeSteps = [
+            { hour: 12, minute: 0, period: "AM", name: "Medianoche" },
+            { hour: 1, minute: 0, period: "AM", name: "Madrugada" },
+            { hour: 2, minute: 0, period: "AM", name: "Madrugada" },
+            { hour: 3, minute: 0, period: "AM", name: "Madrugada" },
+            { hour: 4, minute: 0, period: "AM", name: "Madrugada" },
+            { hour: 5, minute: 0, period: "AM", name: "Pre-amanecer" },
+            { hour: 6, minute: 0, period: "AM", name: "Amanecer" },
+            { hour: 7, minute: 0, period: "AM", name: "Mañana temprano" },
+            { hour: 8, minute: 0, period: "AM", name: "Mañana" },
+            { hour: 9, minute: 0, period: "AM", name: "Mañana" },
+            { hour: 10, minute: 0, period: "AM", name: "Mañana" },
+            { hour: 11, minute: 0, period: "AM", name: "Mañana" },
+            { hour: 12, minute: 0, period: "PM", name: "Mediodía" },
+            { hour: 1, minute: 0, period: "PM", name: "Tarde" },
+            { hour: 2, minute: 0, period: "PM", name: "Tarde" },
+            { hour: 3, minute: 0, period: "PM", name: "Tarde" },
+            { hour: 4, minute: 0, period: "PM", name: "Tarde" },
+            { hour: 5, minute: 0, period: "PM", name: "Pre-atardecer" },
+            { hour: 6, minute: 0, period: "PM", name: "Atardecer" },
+            { hour: 7, minute: 0, period: "PM", name: "Crepúsculo" },
+            { hour: 8, minute: 0, period: "PM", name: "Anochecer" },
+            { hour: 9, minute: 0, period: "PM", name: "Noche" },
+            { hour: 10, minute: 0, period: "PM", name: "Noche" },
+            { hour: 11, minute: 0, period: "PM", name: "Noche" }
+        ];
+        
+        let currentTimeIndex = 0;
+        
+        // Selección de elementos DOM
+        const skyElement = document.querySelector('.sky');
+        const sunElement = document.querySelector('.sun');
+        const moonElement = document.querySelector('.moon');
+        const starsElement = document.querySelector('.stars');
+        const groundElement = document.querySelector('.ground');
+        const houseElement = document.querySelector('.house');
+        const windowElements = document.querySelectorAll('.house-window');
+        const hourHandElement = document.querySelector('.hour-hand');
+        const minuteHandElement = document.querySelector('.minute-hand');
+        const timeDisplayElement = document.querySelector('.time-display');
+        const prevHourButton = document.getElementById('prev-hour');
+        const nextHourButton = document.getElementById('next-hour');
+        
+        /**
+         * Inicializa las estrellas en el cielo
+         */
+        function initStars() {
+            // Crear 50 estrellas y posicionarlas aleatoriamente
+            for (let i = 0; i < 50; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.width = Math.random() * 3 + 1 + 'px';
+                star.style.height = star.style.width;
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 70 + '%';
+                star.style.animationDelay = Math.random() * 2 + 's';
+                starsElement.appendChild(star);
+            }
+        }
+        
+        /**
+         * Actualiza la animación según la hora actual
+         */
+        function updateScene() {
+            const currentTime = timeSteps[currentTimeIndex];
+            
+            // Actualizar hora mostrada
+            timeDisplayElement.textContent = `Hora: ${currentTime.hour}:${currentTime.minute === 0 ? '00' : currentTime.minute} ${currentTime.period} - ${currentTime.name}`;
+            
+            // Actualizar posición del sol y la luna
+            updateCelestialBodies(currentTime);
+            
+            // Actualizar colores del cielo y tierra
+            updateColors(currentTime);
+            
+            // Actualizar iluminación de la casa
+            updateHouseLighting(currentTime);
+            
+            // Actualizar las manecillas del reloj
+            updateClock(currentTime);
+        }
+        
+        /**
+         * Actualiza la posición del sol y la luna según la hora
+         * @param {Object} time - Objeto con la información de la hora actual
+         */
+        function updateCelestialBodies(time) {
+            // Convertir a formato 24 horas para facilitar los cálculos
+            let hour24 = time.hour;
+            if (time.period === "PM" && time.hour !== 12) {
+                hour24 += 12;
+            } else if (time.period === "AM" && time.hour === 12) {
+                hour24 = 0;
+            }
+            
+            // Determinar si es de día (6 AM - 6 PM)
+            const isDaytime = hour24 >= 6 && hour24 < 18;
+            
+            // Determinar si es hora de transición (amanecer o atardecer)
+            const isTransition = hour24 === 6 || hour24 === 5 || hour24 === 17 || hour24 === 18;
+            
+            if (isDaytime) {
+                // Definir períodos del día para el sol
+                const dawnHour = 6;      // Hora del amanecer (6 AM)
+                const duskHour = 18;     // Hora del atardecer (6 PM)
+                const totalDayHours = duskHour - dawnHour;
+                
+                // Calcular progreso del día (0 para amanecer, 1 para atardecer)
+                const dayProgress = (hour24 - dawnHour) / totalDayHours;
+                
+                // Calcular posición en un arco semicircular
+                const angle = dayProgress * Math.PI;
+                const radius = 200;
+                
+                // Coordenadas del sol en el arco
+                const sunX = 400 - radius * Math.cos(angle);
+                const sunY = 350 - radius * Math.sin(angle);
+                
+                // Actualizar posición del sol
+                sunElement.style.left = `${sunX - 40}px`;
+                sunElement.style.top = `${sunY - 40}px`;
+                sunElement.style.display = 'block';
+                
+                // Durante el día normal, mostrar solo el sol
+                if (!isTransition) {
+                    moonElement.style.display = 'none';
+                    starsElement.style.display = 'none';
+                }
+            } 
+            
+            // Para la noche (6 PM - 6 AM)
+            if (!isDaytime || isTransition) {
+                // Definir períodos de la noche para la luna
+                const duskHour = 18;     // Hora del atardecer (6 PM)
+                const dawnHour = 30;     // Hora del amanecer del día siguiente (6 AM + 24h)
+                const totalNightHours = dawnHour - duskHour;
+                
+                // Calcular progreso de la noche (0 para atardecer, 1 para amanecer)
+                let nightProgress;
+                if (hour24 >= 18) {
+                    // Después del atardecer
+                    nightProgress = (hour24 - duskHour) / totalNightHours;
+                } else {
+                    // Antes del amanecer (añadir 24h para el cálculo)
+                    nightProgress = (hour24 + 24 - duskHour) / totalNightHours;
+                }
+                
+                // Calcular posición en un arco semicircular
+                const angle = nightProgress * Math.PI;
+                const radius = 200;
+                
+                // Coordenadas de la luna en el arco
+                const moonX = 400 - radius * Math.cos(angle);
+                const moonY = 350 - radius * Math.sin(angle);
+                
+                // Actualizar posición de la luna
+                moonElement.style.left = `${moonX - 30}px`;
+                moonElement.style.top = `${moonY - 30}px`;
+                
+                // Durante la noche normal, mostrar solo la luna y estrellas
+                if (!isTransition) {
+                    moonElement.style.display = 'block';
+                    sunElement.style.display = 'none';
+                    starsElement.style.display = 'block';
+                    starsElement.style.opacity = '1';
+                }
+            }
+            
+            // Manejar transiciones (amanecer y atardecer)
+            if (isTransition) {
+                // Mostrar tanto el sol como la luna durante las transiciones
+                sunElement.style.display = 'block';
+                moonElement.style.display = 'block';
+                
+                if (hour24 === 5) {
+                    // Pre-amanecer (5 AM)
+                    starsElement.style.display = 'block';
+                    starsElement.style.opacity = '0.7';
+                } else if (hour24 === 6) {
+                    // Amanecer (6 AM)
+                    starsElement.style.display = 'block';
+                    starsElement.style.opacity = '0.3';
+                } else if (hour24 === 17) {
+                    // Pre-atardecer (5 PM)
+                    starsElement.style.display = 'none';
+                } else if (hour24 === 18) {
+                    // Atardecer (6 PM)
+                    starsElement.style.display = 'block';
+                    starsElement.style.opacity = '0.3';
+                }
+            }
+        }
+        
+        /**
+         * Actualiza los colores del cielo y tierra según la hora
+         * @param {Object} time - Objeto con la información de la hora actual
+         */
+        function updateColors(time) {
+            // Definir colores para diferentes momentos del día
+            let skyColor, groundColor;
+            
+            // Convertir a formato 24 horas para facilitar las comparaciones
+            let hour24 = time.hour;
+            if (time.period === "PM" && time.hour !== 12) {
+                hour24 += 12;
+            } else if (time.period === "AM" && time.hour === 12) {
+                hour24 = 0;
+            }
+            
+            if (hour24 === 6) {
+                // Amanecer (6 AM)
+                skyColor = 'linear-gradient(to top, #ff9e7a, #ffd4b8, #a5d8ff)';
+                groundColor = '#3e704b';
+            } else if (hour24 === 5) {
+                // Pre-amanecer (5 AM)
+                skyColor = 'linear-gradient(to top, #2d3a84, #6a4d8e, #472d54)';
+                groundColor = '#234429';
+            } else if (hour24 === 17) {
+                // Pre-atardecer (5 PM)
+                skyColor = 'linear-gradient(to top, #4997d0, #87ceeb)';
+                groundColor = '#3a7d44';
+            } else if (hour24 === 18) {
+                // Atardecer (6 PM)
+                skyColor = 'linear-gradient(to top, #f77622, #ffa26b, #a5d8ff)';
+                groundColor = '#2b5c33';
+            } else if (hour24 === 19) {
+                // Crepúsculo (7 PM)
+                skyColor = 'linear-gradient(to top, #472d54, #6a4d8e, #2d3a84)';
+                groundColor = '#234429';
+            } else if (hour24 === 20) {
+                // Anochecer (8 PM)
+                skyColor = 'linear-gradient(to top, #1a1f44, #2c3361, #131737)';
+                groundColor = '#1e2f25';
+            } else if (hour24 >= 7 && hour24 <= 16) {
+                // Día (7 AM - 4 PM)
+                const dayProgress = (hour24 - 7) / 9; // Progreso del día (0 a 1)
+                
+                // Cambio gradual a lo largo del día
+                if (dayProgress < 0.3) {
+                    // Mañana temprana
+                    skyColor = 'linear-gradient(to top, #87ceeb, #4997d0)';
+                } else if (dayProgress < 0.5) {
+                    // Media mañana
+                    skyColor = 'linear-gradient(to top, #87ceeb, #1e90ff)';
+                } else if (dayProgress < 0.7) {
+                    // Mediodía
+                    skyColor = 'linear-gradient(to top, #4a9dff, #1e90ff)';
+                } else {
+                    // Tarde
+                    skyColor = 'linear-gradient(to top, #4997d0, #87ceeb)';
+                }
+                
+                groundColor = '#3a7d44';
+            } else {
+                // Noche (9 PM - 4 AM)
+                const nightProgress = hour24 >= 21 ? (hour24 - 21) / 8 : (hour24 + 3) / 8;
+                
+                // Cambio gradual a lo largo de la noche
+                if (nightProgress < 0.3 || nightProgress > 0.7) {
+                    // Noche temprana o casi amanecer
+                    skyColor = 'linear-gradient(to top, #0a1128, #1c2541, #131737)';
+                    groundColor = '#1b3722';
+                } else {
+                    // Noche profunda
+                    skyColor = 'linear-gradient(to top, #0a1128, #131737, #000)';
+                    groundColor = '#162b1c';
+                }
+            }
+            
+            // Aplicar colores
+            skyElement.style.background = skyColor;
+            groundElement.style.backgroundColor = groundColor;
+        }
+        
+        /**
+         * Actualiza la iluminación de la casa según la hora
+         * @param {Object} time - Objeto con la información de la hora actual
+         */
+        function updateHouseLighting(time) {
+            // Definir iluminación para diferentes momentos del día
+            let brightness, windowLight;
+            
+            // Convertir a formato 24 horas para facilitar las comparaciones
+            let hour24 = time.hour;
+            if (time.period === "PM" && time.hour !== 12) {
+                hour24 += 12;
+            } else if (time.period === "AM" && time.hour === 12) {
+                hour24 = 0;
+            }
+            
+            // Luces encendidas en la casa durante la noche y madrugada
+            const lightsOn = hour24 >= 18 || hour24 <= 5;
+            
+            if (hour24 >= 7 && hour24 <= 17) {
+                // Día (7 AM - 5 PM)
+                const dayProgress = (hour24 - 7) / 10; // Progreso del día (0 a 1)
+                
+                // Ajuste fino de brillo durante el día
+                if (dayProgress < 0.2) {
+                    // Mañana temprana
+                    brightness = 'brightness(0.9)';
+                } else if (dayProgress < 0.4) {
+                    // Media mañana
+                    brightness = 'brightness(0.95)';
+                } else if (dayProgress < 0.6) {
+                    // Mediodía
+                    brightness = 'brightness(1)';
+                } else if (dayProgress < 0.8) {
+                    // Media tarde
+                    brightness = 'brightness(0.95)';
+                } else {
+                    // Tarde
+                    brightness = 'brightness(0.9)';
+                }
+                
+                windowLight = '#87ceeb';
+            } else if (hour24 === 6) {
+                // Amanecer (6 AM)
+                brightness = 'brightness(0.8)';
+                windowLight = lightsOn ? '#ffdb99' : '#87ceeb';
+            } else if (hour24 === 18) {
+                // Atardecer (6 PM)
+                brightness = 'brightness(0.85)';
+                windowLight = '#ffdb99';
+            } else if (hour24 === 19) {
+                // Crepúsculo (7 PM)
+                brightness = 'brightness(0.75)';
+                windowLight = '#ffdb99';
+            } else if (hour24 === 20) {
+                // Anochecer (8 PM)
+                brightness = 'brightness(0.65)';
+                windowLight = '#ffdb99';
+            } else if (hour24 >= 21 || hour24 <= 2) {
+                // Noche (9 PM - 2 AM)
+                brightness = 'brightness(0.5)';
+                windowLight = '#ffdb99';
+            } else {
+                // Madrugada (3 AM - 5 AM)
+                brightness = 'brightness(0.6)';
+                windowLight = lightsOn ? '#ffdb99' : '#87ceeb';
+            }
+            
+            // Aplicar efectos a la casa (ahora es una imagen)
+            document.querySelector('.house').style.filter = brightness;
+            
+            // Aplicar efectos a las ventanas
+            windowElements.forEach(window => {
+                
+                // Añadir resplandor a las ventanas durante la noche
+                if (lightsOn) {
+                    window.style.boxShadow = '0 0 15px 5px ' + windowLight;
+                } else {
+                    window.style.boxShadow = 'none';
+                }
+            });
+        }
+        
+        /**
+         * Actualiza las manecillas del reloj según la hora
+         * @param {Object} time - Objeto con la información de la hora actual
+         */
+        function updateClock(time) {
+            // Convertir a formato 24 horas para cálculos
+            let hour24 = time.hour;
+            if (time.period === "PM" && time.hour !== 12) {
+                hour24 += 12;
+            } else if (time.period === "AM" && time.hour === 12) {
+                hour24 = 0;
+            }
+            
+            // Calcular ángulos de las manecillas
+            const hourAngle = (hour24 % 12) * 30 + (time.minute / 60) * 30;
+            const minuteAngle = time.minute * 6;
+            
+            // Aplicar rotación
+            hourHandElement.style.transform = `rotate(${hourAngle}deg)`;
+            minuteHandElement.style.transform = `rotate(${minuteAngle}deg)`;
+        }
+        
+        /**
+         * Navega a la hora anterior
+         */
+        function goToPreviousHour() {
+            currentTimeIndex = (currentTimeIndex - 1 + timeSteps.length) % timeSteps.length;
+            updateScene();
+        }
+        
+        /**
+         * Navega a la hora siguiente
+         */
+        function goToNextHour() {
+            currentTimeIndex = (currentTimeIndex + 1) % timeSteps.length;
+            updateScene();
+        }
+        
+        // Inicialización
+        function init() {
+            // Inicializar estrellas
+            initStars();
+            
+            // Configurar escena inicial
+            updateScene();
+            
+            // Configurar eventos de botones
+            prevHourButton.addEventListener('click', goToPreviousHour);
+            nextHourButton.addEventListener('click', goToNextHour);
+        }
+        
+        // Iniciar la animación cuando se carga la página
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

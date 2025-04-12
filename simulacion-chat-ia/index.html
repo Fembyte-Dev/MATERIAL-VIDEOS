@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulación Chat IA - Mejorar Videos</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .chat-container {
+            width: 100%;
+            max-width: 800px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 80vh;
+        }
+        
+        .chat-header {
+            background-color: #6200ee;
+            color: white;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .message {
+            max-width: 70%;
+            padding: 12px 15px;
+            border-radius: 18px;
+            line-height: 1.4;
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            background-color: #6200ee;
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .ai-message {
+            align-self: flex-start;
+            background-color: #f1f1f1;
+            color: #333;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .chat-input {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #eee;
+        }
+        
+        #user-input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+            font-size: 16px;
+        }
+        
+        #send-button {
+            margin-left: 10px;
+            padding: 12px 20px;
+            background-color: #6200ee;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        #send-button:hover {
+            background-color: #7c29ff;
+        }
+        
+        .clothing-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .clothing-item {
+            flex: 1;
+            min-width: 150px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+        
+        .clothing-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .clothing-img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+        
+        .clothing-desc {
+            padding: 10px;
+            background-color: white;
+            font-size: 14px;
+        }
+        
+        .loading-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 50px;
+        }
+        
+        .loading-dot {
+            width: 10px;
+            height: 10px;
+            margin: 0 5px;
+            background-color: #6200ee;
+            border-radius: 50%;
+            animation: bounce 1s infinite ease-in-out;
+        }
+        
+        .loading-dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+        
+        .loading-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .loading-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        .timestamp {
+            font-size: 11px;
+            color: #999;
+            margin-top: 5px;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            Asistente de Mejora de Videos
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <!-- Mensajes aparecerán aquí -->
+        </div>
+        <div class="chat-input">
+            <input type="text" id="user-input" placeholder="Escribe tu pregunta aquí...">
+            <button id="send-button">Enviar</button>
+        </div>
+    </div>
+
+    <script>
+        // Configuración
+        const config = {
+            loadingDuration: 4000, // 4 segundos de animación de carga
+            triggerQuestion: "como puedo mejorar mis videos",  
+            aiResponse: {
+                text: "Puedes mejorar la apariencia de tus videos usando ropa adecuada, analizando tu vestimenta de tus videos anteriores, con lo mas popular del momento. Aquí tienes algunas sugerencias:",
+                clothingItems: [
+                    {
+                        image: "imagen-1.png",
+                        description: "Ropa que muestre de mas, por que es lo que quieren las personas"
+                    },
+                    {
+                        image: "imagen-2.png",
+                        description: "Orejas de furro, porque las redes sociales estan inundadedas de ellas"
+                    },
+                    {
+                        image: "imagen-3.png",
+                        description: "No puede faltar la cola"
+                    }
+                ]
+            }
+        };
+
+        // Elementos del DOM
+        const chatMessages = document.getElementById('chat-messages');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+
+        // Función para agregar un mensaje al chat
+        function addMessage(sender, message, isHTML = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+            messageDiv.classList.add(sender === 'user' ? 'user-message' : 'ai-message');
+            
+            if (isHTML) {
+                messageDiv.innerHTML = message;
+            } else {
+                messageDiv.textContent = message;
+            }
+            
+            // Agregar timestamp
+            const now = new Date();
+            const timestamp = document.createElement('div');
+            timestamp.classList.add('timestamp');
+            timestamp.textContent = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+            
+            messageDiv.appendChild(timestamp);
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Función para mostrar la animación de carga
+        function showLoading() {
+            const loadingDiv = document.createElement('div');
+            loadingDiv.classList.add('message', 'ai-message', 'loading-container');
+            loadingDiv.id = 'loading-indicator';
+            
+            loadingDiv.innerHTML = `
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
+            `;
+            
+            chatMessages.appendChild(loadingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Función para ocultar la animación de carga
+        function hideLoading() {
+            const loadingIndicator = document.getElementById('loading-indicator');
+            if (loadingIndicator) {
+                loadingIndicator.remove();
+            }
+        }
+
+        // Función para generar la respuesta de la IA con las imágenes de ropa
+        function generateAIResponse() {
+            let clothingHTML = '<div class="clothing-container">';
+            
+            config.aiResponse.clothingItems.forEach(item => {
+                clothingHTML += `
+                    <div class="clothing-item">
+                        <img src="${item.image}" alt="Ropa sugerida" class="clothing-img">
+                        <div class="clothing-desc">${item.description}</div>
+                    </div>
+                `;
+            });
+            
+            clothingHTML += '</div>';
+            
+            return `${config.aiResponse.text} ${clothingHTML}`;
+        }
+
+        // Función para manejar el envío de mensajes
+        function handleSendMessage() {
+            const message = userInput.value.trim().toLowerCase();
+            
+            if (message) {
+                addMessage('user', userInput.value);
+                userInput.value = '';
+                
+                // Mostrar animación de carga
+                showLoading();
+                
+                // Simular procesamiento de la IA
+                setTimeout(() => {
+                    hideLoading();
+                    
+                    if (message.includes(config.triggerQuestion)) {
+                        addMessage('ai', generateAIResponse(), true);
+                    } else {
+                        addMessage('ai', "Lo siento, solo puedo responder preguntas sobre cómo mejorar tus videos. Por favor pregunta algo como: '¿Cómo puedo mejorar mis videos?'");
+                    }
+                }, config.loadingDuration);
+            }
+        }
+
+        // Event listeners
+        sendButton.addEventListener('click', handleSendMessage);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleSendMessage();
+            }
+        });
+
+        // Mensaje inicial
+        setTimeout(() => {
+            addMessage('ai', "¡Hola! Fembyte soy tu asistente que te ayudara a mejorar tus videos. Puedes preguntarme lo que quieras, ya tengo toda tus videos anteriores");
+        }, 500);
+    </script>
+</body>
+</html>
