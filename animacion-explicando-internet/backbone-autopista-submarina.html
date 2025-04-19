@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backbone: Mega Autopista Submarina de Datos</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f8ff;
+            color: #333;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #005f99;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            background-color: #003366;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        canvas {
+            display: block;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #005f99;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #004470;
+        }
+        .info-panel {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .concept {
+            margin-bottom: 15px;
+            padding-left: 20px;
+            border-left: 3px solid #005f99;
+        }
+        .concept h3 {
+            color: #005f99;
+            margin-bottom: 5px;
+        }
+        .concept p {
+            margin: 5px 0;
+        }
+        .highlight {
+            background-color: #e6f7ff;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .speed-label {
+            font-size: 14px;
+            color: #555;
+        }
+        .slider {
+            flex-grow: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚄 El Backbone: Mega Autopista Submarina de Datos</h1>
+        
+        <div class="controls">
+            <button id="startBtn">Iniciar Animación</button>
+            <button id="resetBtn">Reiniciar</button>
+            <button id="increaseTrafficBtn">Aumentar Tráfico</button>
+            <button id="decreaseTrafficBtn">Disminuir Tráfico</button>
+        </div>
+        
+        <div class="speed-control">
+            <span class="speed-label">Velocidad:</span>
+            <input type="range" min="1" max="5" value="3" class="slider" id="speedSlider">
+            <span id="speedValue">Normal</span>
+        </div>
+        
+        <div class="canvas-container">
+            <canvas id="backboneCanvas"></canvas>
+        </div>
+        
+        <div class="info-panel">
+            <div id="infoText">
+                <h2>El Backbone como una Mega Autopista Submarina</h2>
+                <p>Esta visualización representa cómo funcionan los cables submarinos que conforman el backbone de Internet mediante una analogía con una autopista.</p>
+            </div>
+            
+            <div class="concept">
+                <h3>📏 Carriles = Ancho de banda</h3>
+                <p>Cada "carril" de la autopista representa un <span class="highlight">hilo de fibra óptica</span> dentro del cable submarino.</p>
+                <p>Un cable moderno (como <em>Marea</em> o <em>Dunant</em>) tiene <span class="highlight">8 pares de fibra</span> (16 hilos en total).</p>
+            </div>
+            
+            <div class="concept">
+                <h3>🚗 Autos = Datos</h3>
+                <p>Cada auto (bit) viaja casi a la <span class="highlight">velocidad de la luz</span> (~200,000 km/s en fibra).</p>
+                <p><span class="highlight">1 Tbps</span> = <span class="highlight">1 billón de autos pasando por segundo</span> en toda la autopista.</p>
+            </div>
+            
+            <div class="concept">
+                <h3>🌊 Capacidad total</h3>
+                <p><span class="highlight">100 Tbps</span> serían <span class="highlight">100 billones de autos por segundo</span> (como si toda la población mundial pasara 12 veces por un túnel en un segundo).</p>
+            </div>
+            
+            <div class="concept">
+                <h3>🚦 Peajes = Routers/Amplificadores</h3>
+                <p>Cada 100 km hay "estaciones de repeater" (como peajes que recargan la señal sin frenar los autos).</p>
+            </div>
+            
+            <div class="concept">
+                <h3>📦 Contenedores = Paquetes de datos</h3>
+                <p>Los datos no van sueltos: van en <span class="highlight">contenedores</span> (paquetes TCP/IP) con direcciones IP como "placas de matrícula".</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuración inicial
+        const canvas = document.getElementById('backboneCanvas');
+        const ctx = canvas.getContext('2d');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const increaseTrafficBtn = document.getElementById('increaseTrafficBtn');
+        const decreaseTrafficBtn = document.getElementById('decreaseTrafficBtn');
+        const speedSlider = document.getElementById('speedSlider');
+        const speedValue = document.getElementById('speedValue');
+        const infoText = document.getElementById('infoText');
+        
+        // Variables para la animación
+        let animationId;
+        let isAnimating = false;
+        let animationSpeed = 3;
+        let trafficDensity = 2; // Densidad inicial de tráfico (1-5)
+        let dataPackets = [];
+        let amplifiers = [];
+        let bubbles = [];
+        
+        // Colores para los paquetes de datos
+        const packetColors = ['#ff6b6b', '#48dbfb', '#1dd1a1', '#feca57', '#54a0ff', '#5f27cd'];
+        
+        // Ajustar tamaño del canvas
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            setupAmplifiers();
+            generateBubbles();
+            drawBackground();
+        }
+        
+        // Configurar amplificadores/routers (peajes en la analogía)
+        function setupAmplifiers() {
+            amplifiers = [];
+            const numAmplifiers = 3;
+            const spacing = canvas.width / (numAmplifiers + 1);
+            
+            for (let i = 0; i < numAmplifiers; i++) {
+                amplifiers.push({
+                    x: (i + 1) * spacing,
+                    y: canvas.height / 2,
+                    width: 30,
+                    height: 120,
+                    pulseRadius: 0,
+                    pulseAlpha: 0.8
+                });
+            }
+        }
+        
+        // Generar burbujas para el efecto submarino
+        function generateBubbles() {
+            bubbles = [];
+            const numBubbles = 50;
+            
+            for (let i = 0; i < numBubbles; i++) {
+                bubbles.push({
+                    x: Math.random() * canvas.width,
+                    y: canvas.height + Math.random() * 50,
+                    radius: 1 + Math.random() * 3,
+                    speed: 0.2 + Math.random() * 0.5,
+                    alpha: 0.1 + Math.random() * 0.3
+                });
+            }
+        }
+        
+        // Dibujar el fondo con los elementos estáticos
+        function drawBackground() {
+            // Gradiente de fondo (océano)
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#003366');
+            gradient.addColorStop(1, '#001830');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Dibujar suelo marino
+            drawSeafloor();
+            
+            // Dibujar cable submarino (la autopista)
+            drawSubmarine();
+            
+            // Dibujar amplificadores (peajes)
+            drawAmplifiers();
+            
+            // Dibujar burbujas
+            drawBubbles();
+        }
+        
+        // Dibujar el suelo marino
+        function drawSeafloor() {
+            ctx.fillStyle = '#5d4037';
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height);
+            
+            // Crear un suelo ondulado
+            for (let x = 0; x <= canvas.width; x += 20) {
+                const y = canvas.height - 20 + Math.sin(x * 0.03) * 8;
+                ctx.lineTo(x, y);
+            }
+            
+            ctx.lineTo(canvas.width, canvas.height);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Añadir algunas rocas
+            for (let i = 0; i < 15; i++) {
+                const x = Math.random() * canvas.width;
+                const y = canvas.height - 25 + Math.sin(x * 0.03) * 8;
+                const size = 3 + Math.random() * 8;
+                
+                ctx.fillStyle = '#3E2723';
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        // Dibujar el cable submarino (la autopista)
+        function drawSubmarine() {
+            const cableY = canvas.height / 2;
+            const cableHeight = 60;
+            
+            // Dibujar el cable principal
+            ctx.fillStyle = '#424242';
+            ctx.fillRect(0, cableY - cableHeight/2, canvas.width, cableHeight);
+            
+            // Dibujar los carriles (hilos de fibra)
+            const laneHeight = 6;
+            const numLanes = 8; // 8 pares = 16 hilos
+            const spacing = (cableHeight - laneHeight * numLanes) / (numLanes + 1);
+            
+            for (let i = 0; i < numLanes; i++) {
+                const laneY = cableY - cableHeight/2 + spacing + i * (laneHeight + spacing);
+                
+                // Dibujar carril de ida
+                ctx.fillStyle = '#64B5F6';
+                ctx.fillRect(0, laneY, canvas.width, laneHeight);
+                
+                // Dibujar carril de vuelta
+                ctx.fillStyle = '#81C784';
+                ctx.fillRect(0, laneY + laneHeight, canvas.width, laneHeight);
+            }
+        }
+        
+        // Dibujar los amplificadores (peajes)
+        function drawAmplifiers() {
+            for (const amp of amplifiers) {
+                // Dibujar estructura del amplificador
+                ctx.fillStyle = '#FF9800';
+                ctx.fillRect(amp.x - amp.width/2, amp.y - amp.height/2, amp.width, amp.height);
+                
+                // Detalles del amplificador
+                ctx.fillStyle = '#FFC107';
+                ctx.fillRect(amp.x - amp.width/2 + 5, amp.y - amp.height/2 + 5, amp.width - 10, amp.height - 10);
+                
+                // Dibujar luces
+                ctx.fillStyle = '#F44336';
+                ctx.beginPath();
+                ctx.arc(amp.x, amp.y - amp.height/4, 5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = '#4CAF50';
+                ctx.beginPath();
+                ctx.arc(amp.x, amp.y, 5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = '#2196F3';
+                ctx.beginPath();
+                ctx.arc(amp.x, amp.y + amp.height/4, 5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Dibujar pulso de energía
+                if (amp.pulseRadius > 0) {
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${amp.pulseAlpha})`;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(amp.x, amp.y, amp.pulseRadius, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            }
+        }
+        
+        // Dibujar burbujas
+        function drawBubbles() {
+            for (const bubble of bubbles) {
+                ctx.fillStyle = `rgba(255, 255, 255, ${bubble.alpha})`;
+                ctx.beginPath();
+                ctx.arc(bubble.x, bubble.y, bubble.radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        // Crear un paquete de datos (auto/contenedor en la analogía)
+        function createDataPacket() {
+            // Determinar si será un paquete pequeño (auto) o grande (contenedor)
+            const isContainer = Math.random() > 0.7;
+            const laneY = canvas.height / 2;
+            const laneHeight = 60;
+            
+            // Seleccionar un carril aleatorio
+            const numLanes = 8;
+            const spacing = (laneHeight - 6 * numLanes) / (numLanes + 1);
+            const laneIndex = Math.floor(Math.random() * numLanes);
+            const laneOffset = laneY - laneHeight/2 + spacing + laneIndex * (6 + spacing);
+            
+            // Determinar dirección (izquierda o derecha)
+            const direction = Math.random() > 0.5 ? 1 : -1;
+            const x = direction > 0 ? -50 : canvas.width + 50;
+            
+            // Elegir un color aleatorio
+            const color = packetColors[Math.floor(Math.random() * packetColors.length)];
+            
+            // Crear el paquete
+            return {
+                x: x,
+                y: laneOffset + (direction > 0 ? 3 : 9), // Ajustar a carriles de ida o vuelta
+                width: isContainer ? 30 : 15,
+                height: 5,
+                speed: (2 + Math.random() * 2) * animationSpeed,
+                direction: direction,
+                color: color,
+                isContainer: isContainer,
+                ip: generateRandomIP()
+            };
+        }
+        
+        // Generar una IP aleatoria para los paquetes
+        function generateRandomIP() {
+            return `${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}`;
+        }
+        
+        // Dibujar un paquete de datos
+        function drawDataPacket(packet) {
+            // Dibujar cuerpo del paquete
+            ctx.fillStyle = packet.color;
+            
+            if (packet.isContainer) {
+                // Dibujar contenedor (paquete TCP/IP)
+                ctx.fillRect(packet.x, packet.y, packet.width, packet.height);
+                
+                // Añadir detalles del contenedor
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(packet.x + 2, packet.y + 1, packet.width - 4, 1);
+                ctx.fillRect(packet.x + packet.width - 5, packet.y + 2, 3, 1);
+                
+                // Agregar "matrícula" (IP)
+                ctx.font = '4px Arial';
+                ctx.fillStyle = '#000';
+                ctx.fillText(packet.ip.split('.')[3], packet.x + 5, packet.y + 4);
+            } else {
+                // Dibujar auto (bit)
+                ctx.beginPath();
+                ctx.roundRect(packet.x, packet.y, packet.width, packet.height, 2);
+                ctx.fill();
+                
+                // Añadir detalles del auto
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(packet.x + packet.width - 3, packet.y + 1, 2, 1);
+                ctx.fillRect(packet.x + 2, packet.y + 1, 2, 1);
+            }
+        }
+        
+        // Actualizar la animación de los amplificadores
+        function updateAmplifiers() {
+            for (const amp of amplifiers) {
+                if (amp.pulseRadius > 0) {
+                    amp.pulseRadius += 1 * animationSpeed;
+                    amp.pulseAlpha -= 0.01 * animationSpeed;
+                    
+                    if (amp.pulseAlpha <= 0) {
+                        amp.pulseRadius = 0;
+                        amp.pulseAlpha = 0.8;
+                    }
+                } else if (Math.random() < 0.01 * animationSpeed) {
+                    amp.pulseRadius = 5;
+                }
+            }
+        }
+        
+        // Actualizar la animación de las burbujas
+        function updateBubbles() {
+            for (const bubble of bubbles) {
+                bubble.y -= bubble.speed * animationSpeed;
+                
+                if (bubble.y < -10) {
+                    bubble.y = canvas.height + Math.random() * 20;
+                    bubble.x = Math.random() * canvas.width;
+                }
+            }
+        }
+        
+        // Función principal de animación
+        function animate() {
+            drawBackground();
+            
+            // Generar nuevos paquetes según la densidad de tráfico
+            if (Math.random() < 0.05 * trafficDensity * animationSpeed) {
+                dataPackets.push(createDataPacket());
+            }
+            
+            // Actualizar y dibujar paquetes de datos
+            for (let i = dataPackets.length - 1; i >= 0; i--) {
+                const packet = dataPackets[i];
+                
+                // Mover el paquete
+                packet.x += packet.speed * packet.direction;
+                
+                // Verificar si el paquete ha salido de la pantalla
+                if ((packet.direction > 0 && packet.x > canvas.width + 50) || 
+                    (packet.direction < 0 && packet.x < -50)) {
+                    dataPackets.splice(i, 1);
+                    continue;
+                }
+                
+                // Dibujar el paquete
+                drawDataPacket(packet);
+                
+                // Verificar interacción con amplificadores
+                for (const amp of amplifiers) {
+                    if (Math.abs(packet.x - amp.x) < 5 && amp.pulseRadius === 0) {
+                        amp.pulseRadius = 5;
+                        packet.speed *= 1.2; // Simular un "boost" al pasar por el amplificador
+                    }
+                }
+            }
+            
+            // Actualizar amplificadores y burbujas
+            updateAmplifiers();
+            updateBubbles();
+            
+            // Actualizar contador de paquetes
+            updatePacketCounter();
+            
+            // Continuar la animación
+            if (isAnimating) {
+                animationId = requestAnimationFrame(animate);
+            }
+        }
+        
+        // Actualizar contador de paquetes
+        function updatePacketCounter() {
+            // Calcular paquetes por segundo aproximados
+            const packetsPerSecond = Math.floor(dataPackets.length * animationSpeed * 5);
+            const tbps = (packetsPerSecond / 1000).toFixed(2);
+            
+            // Dibujar contador
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.fillRect(10, 10, 200, 50);
+            
+            ctx.font = '14px Arial';
+            ctx.fillStyle = '#000';
+            ctx.fillText(`Tráfico: ${packetsPerSecond} paquetes/s`, 20, 30);
+            ctx.fillText(`Equivalente: ~${tbps} Tbps`, 20, 50);
+        }
+        
+        // Iniciar la animación
+        function startAnimation() {
+            if (isAnimating) return;
+            
+            isAnimating = true;
+            animate();
+            infoText.innerHTML = "<h3>¡Animación en curso!</h3><p>Observa cómo los datos (autos y contenedores) viajan por la autopista submarina a alta velocidad.</p>";
+        }
+        
+        // Reiniciar la animación
+        function resetAnimation() {
+            isAnimating = false;
+            cancelAnimationFrame(animationId);
+            dataPackets = [];
+            
+            for (const amp of amplifiers) {
+                amp.pulseRadius = 0;
+                amp.pulseAlpha = 0.8;
+            }
+            
+            drawBackground();
+            infoText.innerHTML = "<h2>El Backbone como una Mega Autopista Submarina</h2><p>Esta visualización representa cómo funcionan los cables submarinos que conforman el backbone de Internet mediante una analogía con una autopista.</p>";
+        }
+        
+        // Aumentar la densidad del tráfico
+        function increaseTraffic() {
+            if (trafficDensity < 5) {
+                trafficDensity++;
+                updateTrafficInfo();
+            }
+        }
+        
+        // Disminuir la densidad del tráfico
+        function decreaseTraffic() {
+            if (trafficDensity > 1) {
+                trafficDensity--;
+                updateTrafficInfo();
+            }
+        }
+        
+        // Actualizar la información del tráfico
+        function updateTrafficInfo() {
+            const trafficLabel = ['Muy bajo', 'Bajo', 'Normal', 'Alto', 'Muy alto'];
+            infoText.innerHTML = `<h3>Densidad de tráfico: ${trafficLabel[trafficDensity-1]}</h3><p>Representando aproximadamente ${trafficDensity * 20} Tbps de capacidad.</p>`;
+        }
+        
+        // Actualizar la velocidad de la animación
+        function updateSpeed() {
+            animationSpeed = parseInt(speedSlider.value);
+            
+            const speedLabels = {
+                1: 'Muy lenta',
+                2: 'Lenta',
+                3: 'Normal',
+                4: 'Rápida',
+                5: 'Muy rápida'
+            };
+            
+            speedValue.textContent = speedLabels[animationSpeed];
+        }
+        
+        // Event listeners
+        startBtn.addEventListener('click', startAnimation);
+        resetBtn.addEventListener('click', resetAnimation);
+        increaseTrafficBtn.addEventListener('click', increaseTraffic);
+        decreaseTrafficBtn.addEventListener('click', decreaseTraffic);
+        speedSlider.addEventListener('input', updateSpeed);
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Inicialización
+        resizeCanvas();
+    </script>
+</body>
+</html>
