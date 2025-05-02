@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FembyteStore - Nintendo Swidh 2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            color: #212529;
+        }
+        
+        .navbar {
+            background-color: #0d6efd;
+            color: white;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-links li {
+            margin-left: 25px;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        .breadcrumb {
+            display: flex;
+            list-style: none;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .breadcrumb li:not(:last-child)::after {
+            content: "›";
+            margin: 0 8px;
+            color: #6c757d;
+        }
+        
+        .breadcrumb a {
+            color: #0d6efd;
+            text-decoration: none;
+        }
+        
+        .product-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .product-gallery {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .product-img {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        .product-info {
+            padding-top: 20px;
+        }
+        
+        .product-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #212529;
+        }
+        
+        .product-description {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #495057;
+            margin-bottom: 25px;
+        }
+        
+        .features {
+            margin-bottom: 25px;
+        }
+        
+        .features h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #343a40;
+        }
+        
+        .features ul {
+            list-style: none;
+            padding-left: 5px;
+        }
+        
+        .features li {
+            position: relative;
+            padding-left: 25px;
+            margin-bottom: 8px;
+            color: #495057;
+        }
+        
+        .features li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .price-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-top: 20px;
+        }
+        
+        .price-card h3 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #212529;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 10px;
+        }
+        
+        .requirements {
+            list-style-type: none;
+            margin-bottom: 25px;
+        }
+        
+        .requirement {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .requirement-checkbox {
+            display: inline-block;
+            width: 22px;
+            height: 22px;
+            border-radius: 4px;
+            background-color: #28a745;
+            color: white;
+            text-align: center;
+            line-height: 22px;
+            margin-right: 12px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .price-real {
+            display: none;
+            font-size: 24px;
+            font-weight: 700;
+            color: #212529;
+            margin: 20px 0;
+        }
+        
+        .price-real span {
+            color: #28a745;
+        }
+        
+        .buy-button {
+            display: block;
+            width: 100%;
+            background-color: #0d6efd;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 12px 0;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .buy-button:hover {
+            background-color: #0b5ed7;
+        }
+        
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 999;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal {
+            background-color: white;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .modal h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #212529;
+        }
+        
+        .modal p {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #495057;
+            margin-bottom: 20px;
+        }
+        
+        .modal-button {
+            background-color: #0d6efd;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .modal-button:hover {
+            background-color: #0b5ed7;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        footer {
+            background-color: #343a40;
+            color: #f8f9fa;
+            padding: 40px 0;
+            margin-top: 50px;
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+        }
+        
+        .footer-column h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #f8f9fa;
+        }
+        
+        .footer-column ul {
+            list-style: none;
+        }
+        
+        .footer-column li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-column a {
+            color: #adb5bd;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+        
+        .footer-column a:hover {
+            color: #f8f9fa;
+        }
+        
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            border-top: 1px solid #495057;
+            margin-top: 30px;
+            text-align: center;
+            font-size: 14px;
+            color: #adb5bd;
+            position: relative;
+        }
+        
+        #modo-despensa {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background: transparent;
+            border: none;
+            color: #343a40;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">FembyteStore</div>
+        <ul class="nav-links">
+            <li><a href="#">Inicio</a></li>
+            <li><a href="#">Productos</a></li>
+            <li><a href="#">Ofertas</a></li>
+            <li><a href="#">Mi cuenta</a></li>
+            <li><a href="#">Carrito</a></li>
+        </ul>
+    </nav>
+    
+    <div class="container">
+        <ul class="breadcrumb">
+            <li><a href="#">Inicio</a></li>
+            <li><a href="#">Videojuegos</a></li>
+            <li><a href="#">Consolas</a></li>
+            <li>Nintendo Swidh 2</li>
+        </ul>
+        
+        <div class="product-details">
+            <div class="product-gallery">
+                <img src="imagen.avif" alt="Nintendo Swidh 2" class="product-img" />
+            </div>
+            
+            <div class="product-info">
+                <h1 class="product-title">Nintendo Swidh 2</h1>
+                
+                <p class="product-description">
+                    La nueva consola Nintendo Swidh 2 revoluciona la forma de jugar con su innovador diseño híbrido que te permite disfrutar de tus juegos favoritos tanto en casa como en movimiento. Su potencia mejorada y pantalla OLED ofrecen una experiencia de juego inmersiva incomparable.
+                </p>
+                
+                <div class="features">
+                    <h3>Características principales:</h3>
+                    <ul>
+                        <li>Procesador avanzado con gráficos mejorados</li>
+                        <li>Pantalla OLED de 7 pulgadas con colores vibrantes</li>
+                        <li>Batería de larga duración (hasta 9 horas)</li>
+                        <li>Memoria interna de 128GB expandible</li>
+                        <li>Compatibilidad con juegos anteriores</li>
+                    </ul>
+                </div>
+                
+                <div class="price-card">
+                    <h3>REQUISITOS DE PAGO</h3>
+                    
+                    <ul class="requirements">
+                        <li class="requirement">
+                            <span class="requirement-checkbox">✓</span>
+                            100,000 likes en redes sociales
+                        </li>
+                        <li class="requirement">
+                            <span class="requirement-checkbox">✓</span>
+                            10,000 comentarios en tu post de compra
+                        </li>
+                        <li class="requirement">
+                            <span class="requirement-checkbox">✓</span>
+                            3 empresas que te paguen con promoción
+                        </li>
+                    </ul>
+                    
+                    <div class="price-real">
+                        Precio: <span>$499.99</span>
+                    </div>
+                    
+                    <button class="buy-button">COMPRAR AHORA</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal-overlay" id="mensaje">
+        <div class="modal">
+            <h2>¡FELICIDADES POR TU COMPRA!</h2>
+            <p>Increíble, ¿no? Gracias a tus likes y comentarios <strong>ya pude juntar para comprarme mi Nintendo Swidh 2</strong>.</p>
+            <p>También me alcanzó para comprar la <strong>despensa semanal</strong>.</p>
+            <p>¡Porque todo el mundo sabe que todo lo puedo pagar con promoción!</p>
+            <button class="modal-button" id="cerrar-mensaje">Volver a la tienda</button>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="footer-content">
+            <div class="footer-column">
+                <h3>FembyteStore</h3>
+                <ul>
+                    <li><a href="#">Sobre nosotros</a></li>
+                    <li><a href="#">Trabaja con nosotros</a></li>
+                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">Noticias</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-column">
+                <h3>Ayuda</h3>
+                <ul>
+                    <li><a href="#">Preguntas frecuentes</a></li>
+                    <li><a href="#">Envíos y entregas</a></li>
+                    <li><a href="#">Devoluciones</a></li>
+                    <li><a href="#">Contacto</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-column">
+                <h3>Categorías</h3>
+                <ul>
+                    <li><a href="#">Consolas</a></li>
+                    <li><a href="#">Videojuegos</a></li>
+                    <li><a href="#">Accesorios</a></li>
+                    <li><a href="#">Merchandising</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-column">
+                <h3>Mi cuenta</h3>
+                <ul>
+                    <li><a href="#">Iniciar sesión</a></li>
+                    <li><a href="#">Registro</a></li>
+                    <li><a href="#">Mis pedidos</a></li>
+                    <li><a href="#">Mi lista de deseos</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>© 2025 FembyteStore. Todos los derechos reservados.</p>
+            <button id="modo-despensa">.</button>
+        </div>
+    </footer>
+    
+    <script>
+        // Mostrar mensaje al hacer clic en comprar
+        const botonComprar = document.querySelector('.buy-button');
+        const mensaje = document.getElementById('mensaje');
+        const cerrarMensaje = document.getElementById('cerrar-mensaje');
+
+        botonComprar.addEventListener('click', () => {
+            mensaje.style.display = 'flex';
+        });
+
+        cerrarMensaje.addEventListener('click', () => {
+            mensaje.style.display = 'none';
+        });
+
+        // Cambiar a modo despensa
+        const modoDispensa = document.getElementById('modo-despensa');
+        const requisitos = document.querySelector('.requirements');
+        const precioReal = document.querySelector('.price-real');
+        const titulo = document.querySelector('.price-card h3');
+
+        modoDispensa.addEventListener('click', () => {
+            if (requisitos.style.display === 'none') {
+                requisitos.style.display = 'block';
+                precioReal.style.display = 'none';
+                titulo.textContent = 'REQUISITOS DE PAGO';
+                botonComprar.textContent = 'COMPRAR AHORA';
+            } else {
+                requisitos.style.display = 'none';
+                precioReal.style.display = 'block';
+                titulo.textContent = 'PRECIO REAL';
+                botonComprar.textContent = 'AÑADIR AL CARRITO';
+            }
+        });
+    </script>
+</body>
+</html>

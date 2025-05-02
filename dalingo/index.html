@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dalingo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f5f5f5;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        #animation-container {
+            width: 1080px;
+            height: 1920px;
+            position: relative;
+            overflow: hidden;
+            background-color: white;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            transform-origin: top left;
+            margin: 20px auto;
+        }
+        
+        #start-button {
+            padding: 15px 30px;
+            font-size: 18px;
+            background-color: #58cc02;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 4px 0 #46a302;
+            transition: all 0.2s;
+        }
+        
+        #start-button:hover {
+            background-color: #46a302;
+        }
+        
+        #start-button:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #46a302;
+        }
+        
+        /* Loading Scene */
+        .loading-scene {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: #58cc02;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        
+        .logo {
+            width: 300px;
+            height: 300px;
+            margin-bottom: 50px;
+        }
+        
+        .loading-bar-container {
+            width: 80%;
+            height: 30px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        
+        .loading-bar {
+            height: 100%;
+            width: 0%;
+            background-color: white;
+            border-radius: 15px;
+            transition: width 2s ease-in-out;
+        }
+        
+        /* Streak Scene */
+        .streak-scene {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            display: none;
+            flex-direction: column;
+            z-index: 9;
+            padding: 50px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        
+        .streak-count {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-top: 100px;
+        }
+        
+        .streak-number {
+            font-size: 120px;
+            font-weight: bold;
+            color: #ff9600;
+        }
+        
+        .streak-text {
+            font-size: 40px;
+            color: #777;
+            margin-top: 20px;
+        }
+        
+        .course-container {
+            margin-top: 100px;
+            padding: 30px;
+            border-radius: 20px;
+            background-color: #f7f7f7;
+        }
+        
+        .course-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .course-title {
+            font-size: 36px;
+            font-weight: bold;
+        }
+        
+        .delete-button {
+            background-color: #ff4b4b;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .course-progress {
+            height: 40px;
+            background-color: #e5e5e5;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            width: 75%;
+            background-color: #58cc02;
+            border-radius: 20px;
+        }
+        
+        /* Course Selection Scene */
+        .course-selection {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            display: none;
+            flex-direction: column;
+            z-index: 8;
+            padding: 50px;
+        }
+        
+        .selection-header {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 50px;
+            text-align: center;
+        }
+        
+        .courses-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .course-card {
+            background-color: #f7f7f7;
+            border-radius: 20px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .course-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .course-card img {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+        }
+        
+        .course-card h3 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        /* Horror Scene */
+        .horror-scene {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 7;
+            color: white;
+        }
+        
+        .clock {
+            font-size: 120px;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 100px;
+        }
+        
+        .horror-message {
+            font-size: 60px;
+            text-align: center;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 2s ease;
+            color: #ff4b4b;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 10px #ff4b4b;
+        }
+        
+        .horror-turtle {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            opacity: 0;
+            transform: scale(3);
+            filter: grayscale(100%) contrast(200%) brightness(50%);
+        }
+        
+        @media (max-width: 1200px) {
+            #animation-container {
+                transform: scale(0.5);
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="animation-container">
+        <!-- Loading Scene -->
+        <div class="loading-scene">
+            <img src="tortuga.png" alt="Dalingo Turtle" class="logo">
+            <div class="loading-bar-container">
+                <div class="loading-bar"></div>
+            </div>
+        </div>
+        
+        <!-- Streak Scene -->
+        <div class="streak-scene">
+            <div class="header">
+                <img src="tortuga.png" alt="Dalingo Turtle" style="width: 80px; height: 80px;">
+                <div style="font-size: 36px; font-weight: bold; color: #58cc02;">Dalingo</div>
+                <div style="width: 80px;"></div>
+            </div>
+            
+            <div class="streak-count">
+                <div class="streak-number">8000</div>
+                <div class="streak-text">días de racha</div>
+            </div>
+            
+            <div class="course-container">
+                <div class="course-header">
+                    <div class="course-title">Inglés</div>
+                    <button class="delete-button">Eliminar</button>
+                </div>
+                <div class="course-progress">
+                    <div class="progress-bar"></div>
+                </div>
+                <div style="font-size: 24px; color: #777;">Nivel 75 - Avanzado</div>
+            </div>
+        </div>
+        
+        <!-- Course Selection Scene -->
+        <div class="course-selection">
+            <div class="header">
+                <img src="tortuga.png" alt="Dalingo Turtle" style="width: 80px; height: 80px;">
+                <div style="font-size: 36px; font-weight: bold; color: #58cc02;">Dalingo</div>
+                <div style="width: 80px;"></div>
+            </div>
+            
+            <div class="selection-header">Elige un nuevo curso</div>
+            
+            <div class="courses-grid">
+                <div class="course-card" id="chinese-course">
+                    <img src="https://via.placeholder.com/100" alt="Chinese Flag">
+                    <h3>Chino</h3>
+                    <p>Aprende chino mandarín desde cero</p>
+                </div>
+                <div class="course-card">
+                    <img src="https://via.placeholder.com/100" alt="French Flag">
+                    <h3>Francés</h3>
+                    <p>Aprende francés desde cero</p>
+                </div>
+                <div class="course-card">
+                    <img src="https://via.placeholder.com/100" alt="German Flag">
+                    <h3>Alemán</h3>
+                    <p>Aprende alemán desde cero</p>
+                </div>
+                <div class="course-card">
+                    <img src="https://via.placeholder.com/100" alt="Japanese Flag">
+                    <h3>Japonés</h3>
+                    <p>Aprende japonés desde cero</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Horror Scene -->
+        <div class="horror-scene">
+            <div class="clock">23:59:59</div>
+            <div class="horror-message">NO HAS HECHO TU LECCIÓN DIARIA</div>
+            <img src="tortuga.png" alt="Scary Turtle" class="horror-turtle">
+        </div>
+    </div>
+    
+    <button id="start-button">Iniciar Animación</button>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const startButton = document.getElementById('start-button');
+            const loadingScene = document.querySelector('.loading-scene');
+            const loadingBar = document.querySelector('.loading-bar');
+            const streakScene = document.querySelector('.streak-scene');
+            const deleteButton = document.querySelector('.delete-button');
+            const courseSelection = document.querySelector('.course-selection');
+            const chineseCourse = document.getElementById('chinese-course');
+            const horrorScene = document.querySelector('.horror-scene');
+            const clock = document.querySelector('.clock');
+            const horrorMessage = document.querySelector('.horror-message');
+            const horrorTurtle = document.querySelector('.horror-turtle');
+            
+            startButton.addEventListener('click', startAnimation);
+            
+            function startAnimation() {
+                // Show loading scene
+                loadingScene.style.display = 'flex';
+                
+                // Animate loading bar
+                setTimeout(() => {
+                    loadingBar.style.width = '100%';
+                }, 100);
+                
+                // Show streak scene after loading
+                setTimeout(() => {
+                    loadingScene.style.display = 'none';
+                    streakScene.style.display = 'flex';
+                }, 2500);
+                
+                // Set up delete button event
+                deleteButton.addEventListener('click', function() {
+                    streakScene.style.display = 'none';
+                    courseSelection.style.display = 'flex';
+                });
+                
+                // Set up Chinese course selection
+                chineseCourse.addEventListener('click', function() {
+                    courseSelection.style.display = 'none';
+                    startHorrorScene();
+                });
+            }
+            
+            function startHorrorScene() {
+                horrorScene.style.display = 'flex';
+                
+                // Clock countdown animation
+                let time = new Date();
+                time.setHours(23, 59, 59);
+                
+                const clockInterval = setInterval(() => {
+                    time.setSeconds(time.getSeconds() + 1);
+                    
+                    if (time.getHours() === 0 && time.getMinutes() === 0 && time.getSeconds() === 0) {
+                        clearInterval(clockInterval);
+                        showHorrorMessage();
+                    }
+                    
+                    const hours = time.getHours().toString().padStart(2, '0');
+                    const minutes = time.getMinutes().toString().padStart(2, '0');
+                    const seconds = time.getSeconds().toString().padStart(2, '0');
+                    
+                    clock.textContent = `${hours}:${minutes}:${seconds}`;
+                }, 1000);
+            }
+            
+            function showHorrorMessage() {
+                // Show horror message with animation
+                horrorMessage.style.opacity = '1';
+                horrorMessage.style.transform = 'scale(1)';
+                
+                // Show scary turtle
+                setTimeout(() => {
+                    horrorTurtle.style.opacity = '0.7';
+                    horrorTurtle.style.transform = 'scale(1)';
+                    
+                    // Add jump scare effect
+                    setTimeout(() => {
+                        horrorScene.style.backgroundColor = '#ff0000';
+                        setTimeout(() => {
+                            horrorScene.style.backgroundColor = '#000000';
+                        }, 100);
+                    }, 1000);
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+</html>
