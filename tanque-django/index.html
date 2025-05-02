@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animación de Fembyte y Tanque Django</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        
+        canvas {
+            border: 1px solid #333;
+            background-color: #87ceeb;
+        }
+        
+        .controls {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 10px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <canvas id="animationCanvas" width="800" height="400"></canvas>
+        <div class="controls">
+            <button id="playButton">Reproducir Animación</button>
+            <button id="resetButton">Reiniciar</button>
+        </div>
+    </div>
+
+    <script>
+        // Obtener el canvas y su contexto
+        const canvas = document.getElementById('animationCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Botones para controlar la animación
+        const playButton = document.getElementById('playButton');
+        const resetButton = document.getElementById('resetButton');
+        
+        // Variables para la animación
+        let animationId = null;
+        let currentFrame = 0;
+        let isPlaying = false;
+        
+        // Constantes de la animación
+        const TOTAL_FRAMES = 300;
+        const GROUND_LEVEL = 350;
+        
+        // Cargar imagen de la chica
+        const girlImage = new Image();
+        girlImage.src = 'imagen.png';
+        
+        // Cargar efecto de sonido para la explosión
+        const explosionSound = new Audio('efecto.mp3');
+        
+        // Coordenadas y medidas iniciales
+        let buildingX = 100;
+        const buildingWidth = 150;
+        const buildingHeight = 250;
+        
+        let girlX = 180;
+        let girlY = GROUND_LEVEL - 50;
+        const girlWidth = 50;
+        const girlHeight = 60;
+        let girlInTank = false;
+        
+        let tankX = 250;
+        const tankY = GROUND_LEVEL - 30;
+        const tankWidth = 80;
+        const tankHeight = 30;
+        
+        let bulletX = 0;
+        let bulletY = 0;
+        let bulletFired = false;
+        
+        let explosionX = 0;
+        let explosionY = 0;
+        let explosionRadius = 0;
+        let explosionStarted = false;
+        
+        // Estados de la animación
+        const STATES = {
+            GIRL_EXITING: 0,
+            GIRL_WALKING_TO_TANK: 1,
+            GIRL_ENTERING_TANK: 2,
+            TANK_MOVING: 3,
+            TANK_FIRING: 4,
+            EXPLOSION: 5,
+            END: 6
+        };
+        
+        let currentState = STATES.GIRL_EXITING;
+        
+        /**
+         * Dibuja el cielo y el suelo
+         */
+        function drawBackground() {
+            // Cielo
+            ctx.fillStyle = '#87CEEB';
+            ctx.fillRect(0, 0, canvas.width, GROUND_LEVEL);
+            
+            // Suelo
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(0, GROUND_LEVEL, canvas.width, canvas.height - GROUND_LEVEL);
+        }
+        
+        /**
+         * Dibuja el edificio en la posición actual
+         */
+        function drawBuilding() {
+            // Estructura principal
+            ctx.fillStyle = '#A0A0A0';
+            ctx.fillRect(buildingX, GROUND_LEVEL - buildingHeight, buildingWidth, buildingHeight);
+            
+            // Puerta
+            ctx.fillStyle = '#4A4A4A';
+            ctx.fillRect(buildingX + 60, GROUND_LEVEL - 60, 30, 60);
+            
+            // Ventanas
+            ctx.fillStyle = '#6495ED';
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 2; j++) {
+                    ctx.fillRect(buildingX + 20 + j * 70, GROUND_LEVEL - buildingHeight + 40 + i * 60, 25, 25);
+                }
+            }
+        }
+        
+        /**
+         * Dibuja a la chica en la posición actual
+         */
+        function drawGirl() {
+            if (girlInTank) return;
+            
+            // Dibujar la imagen de la chica en lugar de formas geométricas
+            if (girlImage.complete) {
+                ctx.drawImage(girlImage, girlX, girlY - 10, girlWidth, girlHeight + 10);
+            }
+        }
+        
+        /**
+         * Dibuja el tanque con la etiqueta Django
+         */
+        function drawTank() {
+            // Cuerpo del tanque
+            ctx.fillStyle = '#556B2F';
+            ctx.fillRect(tankX, tankY, tankWidth, tankHeight);
+            
+            // Torreta
+            ctx.fillStyle = '#556B2F';
+            ctx.fillRect(tankX + 50, tankY - 15, 30, 15);
+            
+            // Cañón
+            ctx.fillStyle = '#333';
+            ctx.fillRect(tankX + 80, tankY - 10, 30, 5);
+            
+            // Ruedas
+            ctx.fillStyle = '#333';
+            for (let i = 0; i < 4; i++) {
+                ctx.beginPath();
+                ctx.arc(tankX + 15 + i*20, tankY + tankHeight, 8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Etiqueta Django
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '10px Arial';
+            ctx.fillText('Django', tankX + 20, tankY + 15);
+        }
+        
+        /**
+         * Dibuja la bala disparada por el tanque
+         */
+        function drawBullet() {
+            if (!bulletFired) return;
+            
+            ctx.fillStyle = '#FF0000';
+            ctx.beginPath();
+            ctx.arc(bulletX, bulletY, 4, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        /**
+         * Dibuja la explosión en el edificio
+         */
+        function drawExplosion() {
+            if (!explosionStarted) return;
+            
+            // Gradiente para la explosión
+            const gradient = ctx.createRadialGradient(
+                explosionX, explosionY, 0,
+                explosionX, explosionY, explosionRadius
+            );
+            gradient.addColorStop(0, 'rgba(255, 255, 0, 0.8)');
+            gradient.addColorStop(0.5, 'rgba(255, 80, 0, 0.7)');
+            gradient.addColorStop(1, 'rgba(255, 0, 0, 0.1)');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(explosionX, explosionY, explosionRadius, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        /**
+         * Actualiza la lógica de la animación según el frame actual
+         */
+        function updateAnimation() {
+            switch (currentState) {
+                case STATES.GIRL_EXITING:
+                    // La chica sale del edificio
+                    if (currentFrame < 30) {
+                        girlX = buildingX + 70;
+                    } else {
+                        currentState = STATES.GIRL_WALKING_TO_TANK;
+                    }
+                    break;
+                    
+                case STATES.GIRL_WALKING_TO_TANK:
+                    // La chica camina hacia el tanque
+                    if (girlX < tankX + 30) {
+                        girlX += 2;
+                    } else {
+                        currentState = STATES.GIRL_ENTERING_TANK;
+                    }
+                    break;
+                    
+                case STATES.GIRL_ENTERING_TANK:
+                    // La chica sube al tanque
+                    girlInTank = true;
+                    currentState = STATES.TANK_MOVING;
+                    break;
+                    
+                case STATES.TANK_MOVING:
+                    // El tanque se aleja
+                    if (tankX < canvas.width - 150) {
+                        tankX += 3;
+                    } else {
+                        currentState = STATES.TANK_FIRING;
+                        bulletX = tankX + 80;
+                        bulletY = tankY - 8;
+                        bulletFired = true;
+                    }
+                    break;
+                    
+                case STATES.TANK_FIRING:
+                    // El tanque dispara
+                    if (bulletFired && bulletX > buildingX + buildingWidth/2) {
+                        bulletX -= 8;
+                    } else if (bulletFired) {
+                        bulletFired = false;
+                        explosionStarted = true;
+                        explosionX = buildingX + buildingWidth/2;
+                        explosionY = GROUND_LEVEL - buildingHeight/2;
+                        // Reproducir el sonido de explosión
+                        explosionSound.currentTime = 0;
+                        explosionSound.play();
+                        currentState = STATES.EXPLOSION;
+                    }
+                    break;
+                    
+                case STATES.EXPLOSION:
+                    // Explosión en el edificio
+                    if (explosionRadius < 100) {
+                        explosionRadius += 5;
+                    } else {
+                        currentState = STATES.END;
+                    }
+                    break;
+                    
+                case STATES.END:
+                    // Fin de la animación
+                    stopAnimation();
+                    break;
+            }
+            
+            currentFrame++;
+        }
+        
+        /**
+         * Dibuja un frame completo de la animación
+         */
+        function drawFrame() {
+            // Limpiar el canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Dibujar elementos
+            drawBackground();
+            drawBuilding();
+            drawTank();
+            drawGirl();
+            drawBullet();
+            drawExplosion();
+        }
+        
+        /**
+         * Función principal de animación
+         */
+        function animate() {
+            updateAnimation();
+            drawFrame();
+            
+            if (isPlaying) {
+                animationId = requestAnimationFrame(animate);
+            }
+        }
+        
+        /**
+         * Inicia la animación
+         */
+        function startAnimation() {
+            if (!isPlaying) {
+                isPlaying = true;
+                animate();
+            }
+        }
+        
+        /**
+         * Detiene la animación
+         */
+        function stopAnimation() {
+            isPlaying = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+        }
+        
+        /**
+         * Reinicia la animación a su estado inicial
+         */
+        function resetAnimation() {
+            stopAnimation();
+            
+            // Detener el sonido si está reproduciéndose
+            explosionSound.pause();
+            explosionSound.currentTime = 0;
+            
+            // Restablecer variables
+            currentFrame = 0;
+            girlX = 180;
+            girlY = GROUND_LEVEL - 50;
+            girlInTank = false;
+            tankX = 250;
+            bulletX = 0;
+            bulletY = 0;
+            bulletFired = false;
+            explosionX = 0;
+            explosionY = 0;
+            explosionRadius = 0;
+            explosionStarted = false;
+            currentState = STATES.GIRL_EXITING;
+            
+            // Dibujar el primer frame
+            drawFrame();
+        }
+        
+        // Inicializar escena
+        drawFrame();
+        
+        // Configurar eventos de los botones
+        playButton.addEventListener('click', startAnimation);
+        resetButton.addEventListener('click', resetAnimation);
+    </script>
+</body>
+</html>
