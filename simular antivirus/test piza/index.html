@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PizzaCartoon - Pizzería con Estilo</title>
+    <style>
+        /* Estilos Generales */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+        }
+        
+        body {
+            background-color: #fffbf2;
+            color: #333;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        
+        /* Header */
+        header {
+            background-color: #ff6b6b;
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .logo {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .logo span {
+            color: #ffce00;
+        }
+        
+        /* Hero Section */
+        .hero {
+            position: relative;
+            height: 50vh;
+            background-color: #fff8e1;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: #ff6b6b;
+            text-align: center;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            z-index: 2;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            z-index: 2;
+        }
+        
+        .hero-button {
+            background-color: #ffce00;
+            color: #ff6b6b;
+            padding: 1rem 2rem;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transition: transform 0.3s;
+            z-index: 2;
+        }
+        
+        .hero-button:hover {
+            transform: scale(1.05);
+        }
+        
+        .ingredients {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        
+        .ingredient {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            opacity: 0;
+            transition: transform 1s, opacity 1s;
+        }
+        
+        /* Pizza Section */
+        .pizzas-section {
+            background-color: #fff8e1;
+            padding: 2rem 0;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            text-align: center;
+            color: #ff6b6b;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background-color: #ffce00;
+            border-radius: 2px;
+        }
+        
+        .pizzas-container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            padding: 0 1rem;
+        }
+        
+        .pizza-card {
+            background-color: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: transform 0.5s, opacity 0.5s;
+        }
+        
+        .pizza-card.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .pizza-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        
+        .pizza-info {
+            padding: 1.5rem;
+        }
+        
+        .pizza-info h3 {
+            font-size: 1.5rem;
+            color: #ff6b6b;
+            margin-bottom: 0.5rem;
+        }
+        
+        .pizza-info p {
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+        
+        .pizza-price {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #ffce00;
+        }
+        
+        /* Location Section */
+        .location-section {
+            background-color: #fff8e1;
+            padding: 2rem 0;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .map-container {
+            height: 300px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 1rem;
+        }
+        
+        .map-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .address {
+            text-align: center;
+            margin: 1rem 0;
+            font-size: 1.1rem;
+        }
+        
+        /* Contact Section */
+        .contact-section {
+            background-color: #fff8e1;
+            padding: 2rem 0;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .contact-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin: 1rem;
+        }
+        
+        .contact-button {
+            background-color: #ff6b6b;
+            color: white;
+            text-decoration: none;
+            padding: 1rem 2rem;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transition: transform 0.3s;
+        }
+        
+        .contact-button:hover {
+            transform: scale(1.05);
+        }
+        
+        .whatsapp-button {
+            background-color: #25D366;
+        }
+        
+        .phone-button {
+            background-color: #4285F4;
+        }
+        
+        .contact-icon {
+            font-size: 1.5rem;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: #ff6b6b;
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            border-radius: 20px 20px 0 0;
+        }
+        
+        footer p {
+            margin-bottom: 1rem;
+        }
+        
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            background-color: white;
+            color: #ff6b6b;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            text-decoration: none;
+            transition: transform 0.3s;
+        }
+        
+        .social-icon:hover {
+            transform: scale(1.1);
+        }
+        
+        /* Animaciones de ingredientes */
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Responsive */
+        @media (min-width: 768px) {
+            .container {
+                max-width: 720px;
+            }
+            
+            .pizzas-container {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .pizza-card {
+                width: calc(50% - 2rem);
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">Pizza<span>Cartoon</span></div>
+        </div>
+    </header>
+    
+    <main class="container">
+        <section class="hero">
+            <h1>¡Las mejores pizzas al estilo cartoon!</h1>
+            <p>Sabores que saltan de la pantalla a tu paladar</p>
+            <a href="#pizzas" class="hero-button">Ver Menú</a>
+            <div class="ingredients" id="ingredients"></div>
+        </section>
+        
+        <section id="pizzas" class="pizzas-section">
+            <h2 class="section-title">Nuestras Pizzas</h2>
+            <div class="pizzas-container">
+                <div class="pizza-card">
+                    <img src="/api/placeholder/400/320" alt="Pizza Margarita" class="pizza-img">
+                    <div class="pizza-info">
+                        <h3>Pizza Margarita</h3>
+                        <p>La clásica pizza con tomate, mozzarella y albahaca fresca. ¡Simplemente deliciosa!</p>
+                        <p class="pizza-price">$120</p>
+                    </div>
+                </div>
+                
+                <div class="pizza-card">
+                    <img src="/api/placeholder/400/320" alt="Pizza Pepperoni" class="pizza-img">
+                    <div class="pizza-info">
+                        <h3>Pizza Pepperoni</h3>
+                        <p>Queso derretido y pepperoni crujiente en cada bocado. ¡Un clásico imperdible!</p>
+                        <p class="pizza-price">$140</p>
+                    </div>
+                </div>
+                
+                <div class="pizza-card">
+                    <img src="/api/placeholder/400/320" alt="Pizza Vegetariana" class="pizza-img">
+                    <div class="pizza-info">
+                        <h3>Pizza Vegetariana</h3>
+                        <p>Llena de vegetales frescos: pimientos, champiñones, aceitunas y cebolla.</p>
+                        <p class="pizza-price">$130</p>
+                    </div>
+                </div>
+                
+                <div class="pizza-card">
+                    <img src="/api/placeholder/400/320" alt="Pizza Suprema" class="pizza-img">
+                    <div class="pizza-info">
+                        <h3>Pizza Suprema</h3>
+                        <p>Cargada con todos nuestros ingredientes: jamón, salami, pimientos, champiñones y más.</p>
+                        <p class="pizza-price">$160</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="location-section">
+            <h2 class="section-title">Dónde Encontrarnos</h2>
+            <div class="map-container">
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3963.952912260219!2d3.375295414770757!3d6.5276316452612825!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNsKwMzEnMzkuNSJOIDPCsDIyJzMxLjEiRQ!5e0!3m2!1sen!2sng!4v1619181392478!5m2!1sen!2sng" allowfullscreen="" loading="lazy"></iframe>
+            </div>
+            <p class="address">Av. Siempre Viva 123, Springfield</p>
+        </section>
+        
+        <section class="contact-section">
+            <h2 class="section-title">Contáctanos</h2>
+            <div class="contact-buttons">
+                <a href="https://wa.me/1234567890?text=Hola,%20quiero%20ordenar%20una%20pizza" class="contact-button whatsapp-button">
+                    <i class="fab fa-whatsapp contact-icon"></i>
+                    WhatsApp
+                </a>
+                <a href="tel:+1234567890" class="contact-button phone-button">
+                    <i class="fas fa-phone-alt contact-icon"></i>
+                    Llamar
+                </a>
+            </div>
+        </section>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <p>PizzaCartoon © 2025. Todos los derechos reservados.</p>
+            <p>Horario: Lunes a Domingo de 11:00 AM a 11:00 PM</p>
+            <div class="social-icons">
+                <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        // Animación de ingredientes
+        const ingredients = [
+            '🍕', '🧀', '🍅', '🍄', '🌶️', '🍍', '🥓', '🥖', '🫒', '🧄'
+        ];
+        
+        const ingredientsContainer = document.getElementById('ingredients');
+        
+        function createIngredient() {
+            const ingredient = document.createElement('div');
+            ingredient.className = 'ingredient';
+            ingredient.textContent = ingredients[Math.floor(Math.random() * ingredients.length)];
+            ingredient.style.fontSize = `${Math.random() * 20 + 20}px`;
+            ingredient.style.left = `${Math.random() * 100}%`;
+            ingredient.style.animationDuration = `${Math.random() * 5 + 5}s`;
+            
+            ingredientsContainer.appendChild(ingredient);
+            
+            setTimeout(() => {
+                ingredient.style.opacity = '1';
+                ingredient.style.transform = `translateY(-100vh) rotate(${Math.random() * 360}deg)`;
+                
+                setTimeout(() => {
+                    ingredient.remove();
+                }, 8000);
+            }, 100);
+        }
+        
+        // Crear ingredientes periódicamente
+        setInterval(createIngredient, 300);
+        
+        // Animación de aparición de las pizzas
+        const pizzaCards = document.querySelectorAll('.pizza-card');
+        
+        function isElementInViewport(el) {
+            const rect = el.getBoundingClientRect();
+            return (
+                rect.top >= 0 &&
+                rect.left >= 0 &&
+                rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+                rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+            );
+        }
+        
+        function animatePizzaCards() {
+            pizzaCards.forEach(card => {
+                if (isElementInViewport(card)) {
+                    card.classList.add('show');
+                }
+            });
+        }
+        
+        // Llamar a la función una vez al cargar la página
+        window.addEventListener('load', animatePizzaCards);
+        
+        // Llamar a la función al hacer scroll
+        window.addEventListener('scroll', animatePizzaCards);
+    </script>
+</body>
+</html>
