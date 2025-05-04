@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Papa Bailando</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f5f5dc;
+            margin: 0;
+            overflow: hidden;
+        }
+        
+        canvas {
+            border: 2px solid #a67c52;
+            background-color: #f8f8f8;
+        }
+        
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        button {
+            padding: 8px 15px;
+            background-color: #a67c52;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        button:hover {
+            background-color: #8b5a2b;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="papaCanvas" width="400" height="400"></canvas>
+    <div class="controls">
+        <button id="startButton">Iniciar Baile</button>
+        <button id="stopButton">Detener</button>
+    </div>
+
+    <script>
+        // Obtener el elemento canvas y su contexto
+        const canvas = document.getElementById('papaCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Variables de animación
+        let animationId = null;
+        let angle = 0;
+        let bounce = 0;
+        let direction = 1;
+        let rotationSpeed = 0.03;
+        
+        /**
+         * Dibuja el cuerpo de la papa
+         * @param {number} x - Posición x del centro
+         * @param {number} y - Posición y del centro
+         * @param {number} bounce - Valor para el efecto de rebote
+         */
+        function drawPotatoBody(x, y, bounce) {
+            ctx.save();
+            ctx.translate(x, y);
+            
+            // Cuerpo principal (forma de papa)
+            ctx.beginPath();
+            ctx.fillStyle = '#c69c6d';
+            ctx.ellipse(0, 0 + bounce, 70, 90, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Manchas en la papa
+            ctx.fillStyle = '#a67c52';
+            ctx.beginPath();
+            ctx.ellipse(-30, 20, 15, 10, Math.PI / 4, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.ellipse(25, -30, 12, 8, Math.PI / 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.ellipse(20, 40, 10, 7, Math.PI / 6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.ellipse(-20, -40, 8, 6, Math.PI / 5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+        }
+        
+        /**
+         * Dibuja la cara de la papa
+         * @param {number} x - Posición x del centro
+         * @param {number} y - Posición y del centro
+         * @param {number} bounce - Valor para el efecto de rebote
+         * @param {number} angle - Ángulo para expresiones faciales
+         */
+        function drawFace(x, y, bounce, angle) {
+            ctx.save();
+            ctx.translate(x, y + bounce);
+            
+            // Ojos
+            ctx.fillStyle = 'black';
+            // Ojo izquierdo
+            ctx.beginPath();
+            ctx.ellipse(-20, -20, 8, 8 + Math.sin(angle * 2) * 2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Ojo derecho
+            ctx.beginPath();
+            ctx.ellipse(20, -20, 8, 8 + Math.sin(angle * 2 + 0.5) * 2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Brillo en los ojos
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.ellipse(-17, -22, 3, 3, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.ellipse(23, -22, 3, 3, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Boca (cambia con el baile)
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(-25, 10);
+            
+            // La boca cambia de forma con el ángulo para dar expresión
+            ctx.bezierCurveTo(
+                -10, 20 + Math.sin(angle * 3) * 5, 
+                10, 20 + Math.sin(angle * 3) * 5, 
+                25, 10
+            );
+            ctx.stroke();
+            
+            ctx.restore();
+        }
+        
+        /**
+         * Dibuja las extremidades de la papa
+         * @param {number} x - Posición x del centro
+         * @param {number} y - Posición y del centro
+         * @param {number} angle - Ángulo de rotación para el baile
+         */
+        function drawLimbs(x, y, angle) {
+            ctx.save();
+            ctx.translate(x, y);
+            
+            // Brazos
+            ctx.strokeStyle = '#8b5a2b';
+            ctx.lineWidth = 5;
+            
+            // Brazo izquierdo
+            ctx.beginPath();
+            ctx.moveTo(-50, -10);
+            // El brazo izquierdo se mueve con el seno del ángulo
+            ctx.lineTo(-90, -30 + Math.sin(angle * 2) * 40);
+            ctx.stroke();
+            
+            // Mano izquierda
+            ctx.beginPath();
+            ctx.arc(-90, -30 + Math.sin(angle * 2) * 40, 8, 0, Math.PI * 2);
+            ctx.fillStyle = '#8b5a2b';
+            ctx.fill();
+            
+            // Brazo derecho
+            ctx.beginPath();
+            ctx.moveTo(50, -10);
+            // El brazo derecho se mueve con el coseno del ángulo (desfasado)
+            ctx.lineTo(90, -30 + Math.cos(angle * 2) * 40);
+            ctx.stroke();
+            
+            // Mano derecha
+            ctx.beginPath();
+            ctx.arc(90, -30 + Math.cos(angle * 2) * 40, 8, 0, Math.PI * 2);
+            ctx.fillStyle = '#8b5a2b';
+            ctx.fill();
+            
+            // Piernas
+            // Pierna izquierda
+            ctx.beginPath();
+            ctx.moveTo(-30, 80);
+            // La pierna izquierda se mueve con el seno del ángulo
+            ctx.lineTo(-40, 130 + Math.sin(angle) * 20);
+            ctx.stroke();
+            
+            // Pie izquierdo
+            ctx.beginPath();
+            ctx.ellipse(-45, 130 + Math.sin(angle) * 20, 15, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Pierna derecha
+            ctx.beginPath();
+            ctx.moveTo(30, 80);
+            // La pierna derecha se mueve con el coseno del ángulo (desfasado)
+            ctx.lineTo(40, 130 + Math.cos(angle) * 20);
+            ctx.stroke();
+            
+            // Pie derecho
+            ctx.beginPath();
+            ctx.ellipse(45, 130 + Math.cos(angle) * 20, 15, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+        }
+        
+        /**
+         * Dibuja efectos de movimiento para dar sensación de baile
+         * @param {number} x - Posición x del centro
+         * @param {number} y - Posición y del centro
+         * @param {number} angle - Ángulo para los efectos
+         */
+        function drawEffects(x, y, angle) {
+            ctx.save();
+            ctx.strokeStyle = 'rgba(255, 215, 0, 0.6)';
+            ctx.lineWidth = 2;
+            
+            // Líneas de movimiento alrededor para indicar baile
+            for (let i = 0; i < 8; i++) {
+                const effectAngle = (Math.PI * 2 / 8) * i + angle;
+                const radius = 140 + Math.sin(angle * 3 + i) * 15;
+                
+                ctx.beginPath();
+                ctx.moveTo(
+                    x + Math.cos(effectAngle) * radius,
+                    y + Math.sin(effectAngle) * radius
+                );
+                ctx.lineTo(
+                    x + Math.cos(effectAngle) * (radius + 15),
+                    y + Math.sin(effectAngle) * (radius + 15)
+                );
+                ctx.stroke();
+            }
+            
+            // Estrellas de baile
+            const starPositions = [
+                { x: x - 120, y: y - 100, size: 10 + Math.sin(angle * 2) * 3 },
+                { x: x + 130, y: y - 80, size: 8 + Math.sin(angle * 2 + 1) * 3 },
+                { x: x - 100, y: y + 120, size: 12 + Math.sin(angle * 2 + 2) * 3 },
+                { x: x + 110, y: y + 100, size: 9 + Math.sin(angle * 2 + 3) * 3 }
+            ];
+            
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.8)';
+            starPositions.forEach(star => {
+                drawStar(star.x, star.y, 5, star.size, star.size / 2);
+            });
+            
+            ctx.restore();
+        }
+        
+        /**
+         * Función para dibujar una estrella
+         * @param {number} cx - Centro x
+         * @param {number} cy - Centro y
+         * @param {number} spikes - Número de puntas
+         * @param {number} outerRadius - Radio exterior
+         * @param {number} innerRadius - Radio interior
+         */
+        function drawStar(cx, cy, spikes, outerRadius, innerRadius) {
+            let rot = Math.PI / 2 * 3;
+            let x = cx;
+            let y = cy;
+            let step = Math.PI / spikes;
+
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - outerRadius);
+            
+            for (let i = 0; i < spikes; i++) {
+                x = cx + Math.cos(rot) * outerRadius;
+                y = cy + Math.sin(rot) * outerRadius;
+                ctx.lineTo(x, y);
+                rot += step;
+
+                x = cx + Math.cos(rot) * innerRadius;
+                y = cy + Math.sin(rot) * innerRadius;
+                ctx.lineTo(x, y);
+                rot += step;
+            }
+            
+            ctx.lineTo(cx, cy - outerRadius);
+            ctx.closePath();
+            ctx.fill();
+        }
+        
+        /**
+         * Función principal para animar la papa bailando
+         */
+        function animate() {
+            // Limpiar el canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Actualizar variables de animación
+            angle += rotationSpeed;
+            bounce = Math.sin(angle * 3) * 5;
+            
+            // Dibujar efectos de fondo
+            drawEffects(canvas.width / 2, canvas.height / 2, angle);
+            
+            // Dibujar la papa y sus partes
+            drawLimbs(canvas.width / 2, canvas.height / 2, angle);
+            drawPotatoBody(canvas.width / 2, canvas.height / 2, bounce);
+            drawFace(canvas.width / 2, canvas.height / 2 - 20, bounce, angle);
+            
+            // Continuar la animación
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        /**
+         * Iniciar la animación
+         */
+        function startAnimation() {
+            if (!animationId) {
+                animate();
+            }
+        }
+        
+        /**
+         * Detener la animación
+         */
+        function stopAnimation() {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+        }
+        
+        // Configurar eventos de los botones
+        document.getElementById('startButton').addEventListener('click', startAnimation);
+        document.getElementById('stopButton').addEventListener('click', stopAnimation);
+        
+        // Iniciar automáticamente
+        startAnimation();
+    </script>
+</body>
+</html>

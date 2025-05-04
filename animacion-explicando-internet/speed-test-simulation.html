@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Test de Velocidad Avanzado</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #0a0e17;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .speed-test-container {
+            width: 1000px;
+            height: 800px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #121620;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            padding: 30px;
+        }
+        
+        .header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 30px 70px;
+            box-sizing: border-box;
+        }
+        
+        .header-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .header-section:hover {
+            transform: translateY(-5px);
+        }
+        
+        .header-title {
+            font-size: 22px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .header-line {
+            width: 150px;
+            height: 5px;
+            background: linear-gradient(90deg, #550000, #ff0000);
+            border-radius: 3px;
+        }
+        
+        .ping-section {
+            display: flex;
+            align-items: center;
+            margin: 35px 0;
+            background-color: rgba(255, 0, 0, 0.05);
+            padding: 15px 30px;
+            border-radius: 20px;
+            border: 2px solid rgba(255, 0, 0, 0.2);
+        }
+        
+        .ping-label {
+            margin-right: 25px;
+            font-weight: bold;
+            font-size: 22px;
+            color: #ff3333;
+        }
+        
+        .ping-indicator {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 15px;
+            font-size: 18px;
+            font-weight: bold;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .ping-indicator:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+        }
+        
+        .gauge-container {
+            width: 550px;
+            height: 300px;
+            position: relative;
+            margin: 40px 0;
+        }
+        
+        .gauge-bg {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        .gauge-fill {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            clip-path: polygon(50% 50%, 0% 50%, 0% 0%, 100% 0%, 100% 50%);
+            filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.7));
+        }
+        
+        .gauge-center {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, #ff3333, #550000);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 25px rgba(255, 0, 0, 0.6);
+            z-index: 10;
+        }
+        
+        .gauge-needle {
+            position: absolute;
+            width: 170px;
+            height: 8px;
+            background: linear-gradient(90deg, #ff3333, white);
+            top: 50%;
+            left: 50%;
+            transform-origin: left center;
+            transform: rotate(-90deg);
+            border-radius: 4px;
+            z-index: 5;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+        }
+        
+        .speed-value {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 15px 30px;
+            border-radius: 20px;
+            border: 2px solid rgba(255, 0, 0, 0.3);
+        }
+        
+        .speed-number {
+            font-size: 68px;
+            font-weight: bold;
+            font-family: 'Arial', sans-serif;
+            letter-spacing: -1px;
+            background: linear-gradient(90deg, #ff3333, #ffaaaa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 8px rgba(255, 0, 0, 0.4);
+        }
+        
+        .speed-unit {
+            font-size: 22px;
+            color: #ff3333;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .markers {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+        
+        .marker {
+            position: absolute;
+            font-size: 18px;
+            transform: translate(-50%, 0);
+            color: #aaa;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .marker:hover {
+            color: #ff3333;
+            transform: translate(-50%, -5px) scale(1.1);
+        }
+        
+        .footer {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 100px;
+            background-color: rgba(255, 0, 0, 0.05);
+            padding: 20px;
+            border-radius: 20px;
+            border: 2px solid rgba(255, 0, 0, 0.2);
+        }
+        
+        .provider {
+            font-size: 34px;
+            margin-right: 25px;
+            font-weight: bold;
+            background: linear-gradient(90deg, #ff3333, #ffaaaa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .icon-circle {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #550000, #330000);
+            border: 2px solid #ff3333;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 20px;
+            font-size: 28px;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .icon-circle:hover {
+            transform: scale(1.1) rotate(10deg);
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+        }
+        
+        .more {
+            color: #ff3333;
+            margin-left: 25px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .more:hover {
+            transform: scale(1.1);
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
+        
+        .progress-bar {
+            width: 90%;
+            height: 12px;
+            background-color: #330000;
+            position: absolute;
+            bottom: 30px;
+            left: 5%;
+            overflow: hidden;
+            border-radius: 6px;
+            box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.5);
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #550000, #ff3333, #ffaaaa);
+            width: 0;
+            border-radius: 6px;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.7);
+            transition: width 0.3s ease;
+        }
+        
+        .test-status {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            font-size: 34px;
+            font-weight: bold;
+            color: #FF3333;
+            text-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 15px 30px;
+            border-radius: 20px;
+            border: 2px solid rgba(255, 0, 0, 0.3);
+            z-index: 100;
+        }
+        
+        .controls {
+            position: absolute;
+            bottom: 140px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .start-btn {
+            padding: 15px 40px;
+            background: linear-gradient(90deg, #550000, #cc0000, #ff3333);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 22px;
+            font-weight: bold;
+            box-shadow: 0 8px 20px rgba(255, 0, 0, 0.4);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .start-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(255, 0, 0, 0.5);
+        }
+        
+        .start-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(255, 0, 0, 0.3);
+        }
+        
+        .start-btn:disabled {
+            background: linear-gradient(90deg, #333, #555);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        
+        /* Efectos de partículas durante la prueba */
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+        
+        .particle {
+            position: absolute;
+            background-color: rgba(255, 51, 51, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0;
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: scale(0); }
+            50% { opacity: 0.8; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0); }
+        }
+        
+        /* Animación de pulso para el estado de prueba */
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .pulse {
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="speed-test-container">
+        <div class="test-status" id="testStatus">Presiona Iniciar Test</div>
+        
+        <div class="header">
+            <div class="header-section">
+                <div class="header-title">DESCARGA Mbps</div>
+                <div class="header-line"></div>
+            </div>
+            <div class="header-section">
+                <div class="header-title">SUBIDA Mbps</div>
+                <div class="header-line"></div>
+            </div>
+        </div>
+        
+        <div class="ping-section">
+            <div class="ping-label">Ping ms</div>
+            <div class="ping-indicator" style="background-color: #550000;">25</div>
+            <div class="ping-indicator" style="background-color: #cc0000;">50</div>
+            <div class="ping-indicator" style="background-color: #ff3333;">75</div>
+        </div>
+        
+        <div class="gauge-container">
+            <svg class="gauge-bg" viewBox="0 0 200 100">
+                <path d="M 10,100 A 90,90 0 0,1 190,100" stroke="#330000" stroke-width="18" fill="none"/>
+            </svg>
+            <svg class="gauge-fill" id="gaugeFill" viewBox="0 0 200 100">
+                <path d="M 10,100 A 90,90 0 0,1 190,100" stroke="url(#gradientRed)" stroke-width="18" fill="none" stroke-dasharray="282 282" stroke-dashoffset="282" id="gaugeArc"/>
+            </svg>
+            <div class="gauge-center"></div>
+            <div class="gauge-needle" id="gaugeNeedle"></div>
+            
+            <div class="markers">
+                <div class="marker" style="top: 110%; left: 5%;">0</div>
+                <div class="marker" style="top: 85%; left: 15%;">1000</div>
+                <div class="marker" style="top: 65%; left: 25%;">5000</div>
+                <div class="marker" style="top: 50%; left: 37%;">10000</div>
+                <div class="marker" style="top: 40%; left: 50%;">25000</div>
+                <div class="marker" style="top: 50%; left: 63%;">40000</div>
+                <div class="marker" style="top: 65%; left: 75%;">55000</div>
+                <div class="marker" style="top: 85%; left: 85%;">65000</div>
+                <div class="marker" style="top: 110%; left: 95%;">70000</div>
+            </div>
+            
+            <div class="speed-value">
+                <div class="speed-number" id="speedValue">0.00</div>
+                <div class="speed-unit">Mbps</div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <div class="provider">CiberRepública</div>
+            <div class="icon-circle">👤</div>
+            <div class="icon-circle">🌐</div>
+            <div class="icon-circle">📱</div>
+            <div class="more">+3 más</div>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressBar"></div>
+        </div>
+        
+        <div class="controls">
+            <button class="start-btn" id="startButton">Iniciar Test</button>
+        </div>
+        
+        <div class="particles" id="particles"></div>
+        
+        <svg width="0" height="0">
+            <defs>
+                <linearGradient id="gradientRed" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style="stop-color:#330000" />
+                    <stop offset="50%" style="stop-color:#cc0000" />
+                    <stop offset="100%" style="stop-color:#FF3333" />
+                </linearGradient>
+            </defs>
+        </svg>
+    </div>
+
+    <script>
+        // Variables para controlar la simulación
+        const speedValue = document.getElementById('speedValue');
+        const gaugeNeedle = document.getElementById('gaugeNeedle');
+        const gaugeArc = document.getElementById('gaugeArc');
+        const progressBar = document.getElementById('progressBar');
+        const startButton = document.getElementById('startButton');
+        const testStatus = document.getElementById('testStatus');
+        const particlesContainer = document.getElementById('particles');
+        
+        // Valores de configuración
+        const maxSpeed = 67452;      // Velocidad máxima de descarga en Mbps
+        const maxUploadSpeed = 35500; // Velocidad máxima de subida en Mbps
+        const downloadDuration = 10000; // Duración de la prueba de descarga en ms
+        const uploadDuration = 8000;   // Duración de la prueba de subida en ms
+        const pingDuration = 3000;     // Duración de la prueba de ping en ms
+        let testInProgress = false;
+        
+        // Función para crear partículas durante la prueba
+        function createParticles() {
+            if (!testInProgress) return;
+            
+            const particle = document.createElement('div');
+            particle.classList.add('particle');
+            
+            // Tamaño aleatorio
+            const size = Math.random() * 20 + 5;
+            particle.style.width = `${size}px`;
+            particle.style.height = `${size}px`;
+            
+            // Posición aleatoria
+            const posX = Math.random() * 100;
+            const posY = Math.random() * 100;
+            particle.style.left = `${posX}%`;
+            particle.style.top = `${posY}%`;
+            
+            // Animación
+            particle.style.animation = `fadeInOut ${Math.random() * 2 + 1}s forwards`;
+            
+            particlesContainer.appendChild(particle);
+            
+            // Eliminar la partícula después de la animación
+            setTimeout(() => {
+                if (particle.parentNode === particlesContainer) {
+                    particlesContainer.removeChild(particle);
+                }
+            }, 3000);
+            
+            // Crear más partículas si la prueba sigue en progreso
+            if (testInProgress) {
+                setTimeout(createParticles, Math.random() * 200 + 50);
+            }
+        }
+        
+        // Función para animar la aguja a un valor específico
+        function animateNeedle(speed, maxValue) {
+            // Calcular el ángulo de rotación
+            // 0 es -90 grados, maxValue es 90 grados
+            const angle = -90 + (speed / maxValue) * 180;
+            if (angle > 90) return;
+            
+            // Rotar la aguja con una transición suave
+            gaugeNeedle.style.transition = 'transform 0.5s ease-out';
+            gaugeNeedle.style.transform = `rotate(${angle}deg)`;
+            
+            // Actualizar el arco de relleno con una transición suave
+            // 282 es el valor total de la longitud del trazo
+            const dashOffset = 282 - (speed / maxValue) * 282;
+            gaugeArc.style.transition = 'stroke-dashoffset 0.5s ease-out';
+            gaugeArc.style.strokeDashoffset = dashOffset;
+        }
+        
+        // Función para animar el valor numérico con formato de miles
+        function animateValue(start, end, duration, element, isUpload = false) {
+            const startTime = performance.now();
+            
+            // Función para formatear números grandes con separadores de miles
+            function formatNumber(num) {
+                return num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            }
+            
+            // Función para actualizar el valor en cada frame
+            function updateValue(timestamp) {
+                const elapsed = timestamp - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Aplicar una curva de aceleración no lineal para un efecto más realista
+                const easeProgress = progress < 0.5 
+                    ? 4 * progress * progress * progress 
+                    : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+                
+                // Calcular el valor actual
+                const currentValue = start + easeProgress * (end - start);
+                
+                // Actualizar la UI con formato de miles
+                element.textContent = formatNumber(currentValue);
+                animateNeedle(currentValue, 70000); // Max de la escala ajustado a 70000
+                
+                // Continuar la animación si no ha terminado
+                if (progress < 1) {
+                    requestAnimationFrame(updateValue);
+                }
+            }
+            
+            requestAnimationFrame(updateValue);
+        }
+        
+        // Función para simular la prueba completa
+        function runSpeedTest() {
+            if (testInProgress) return;
+            testInProgress = true;
+            
+            // Desactivar botón durante la prueba
+            startButton.disabled = true;
+            
+            // Añadir efecto de pulso al estado
+            testStatus.classList.add('pulse');
+            
+            // Iniciar partículas
+            createParticles();
+            
+            // 1. Ping test
+            testStatus.textContent = "Probando ping...";
+            progressBar.style.width = "10%";
+            
+            setTimeout(() => {
+                // 2. Prueba de descarga
+                testStatus.textContent = "Midiendo velocidad de descarga...";
+                
+                // Actualizar la barra de progreso
+                let progress = 10;
+                const progressInterval = setInterval(() => {
+                    if (progress < 50) {
+                        progress += 2;
+                        progressBar.style.width = progress + "%";
+                    } else {
+                        clearInterval(progressInterval);
+                    }
+                }, 200);
+                
+                // Animar el valor de velocidad
+                animateValue(0, maxSpeed, downloadDuration, speedValue);
+                
+                setTimeout(() => {
+                    // 3. Prueba de subida
+                    testStatus.textContent = "Midiendo velocidad de subida...";
+                    progress = 50;
+                    
+                    // Continuar actualizando la barra de progreso
+                    const uploadProgressInterval = setInterval(() => {
+                        if (progress < 95) {
+                            progress += 2;
+                            progressBar.style.width = progress + "%";
+                        } else {
+                            clearInterval(uploadProgressInterval);
+                        }
+                    }, 200);
+                    
+                    // Animar el valor de velocidad para subida
+                    animateValue(maxSpeed, maxUploadSpeed, uploadDuration, speedValue, true);
+                    
+                    setTimeout(() => {
+                        // 4. Prueba completa
+                        testStatus.textContent = "¡Test completado!";
+                        progressBar.style.width = "100%";
+                        startButton.disabled = false;
+                        testInProgress = false;
+                        
+                        // Quitar efecto de pulso
+                        testStatus.classList.remove('pulse');
+                        
+                        // Después de 2 segundos, mostrar el valor final
+                        setTimeout(() => {
+                            animateValue(maxUploadSpeed, maxSpeed, 5000, speedValue);
+                            testStatus.textContent = "Velocidad máxima: " + maxSpeed.toLocaleString() + " Mbps";
+                        }, 2000);
+                        
+                    }, uploadDuration);
+                    
+                }, downloadDuration);
+                
+            }, pingDuration);
+        }
+        
+        // Evento para iniciar la prueba
+        startButton.addEventListener('click', runSpeedTest);
+        
+        // Inicializar la aguja en la posición inicial
+        animateNeedle(0, 70000);
+    </script>
+</body>
+</html>

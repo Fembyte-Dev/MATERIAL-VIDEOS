@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruta Física de los Datos</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #4267B2;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        canvas {
+            display: block;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4267B2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #365899;
+        }
+        .info-panel {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .step {
+            margin-bottom: 15px;
+            padding-left: 20px;
+            border-left: 3px solid #4267B2;
+        }
+        .step h3 {
+            color: #4267B2;
+            margin-bottom: 5px;
+        }
+        .step p {
+            margin: 5px 0;
+        }
+        .highlight {
+            background-color: #ffff99;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Ruta Física de tus Datos: Facebook</h1>
+        
+        <div class="controls">
+            <button id="startBtn">Iniciar Animación</button>
+            <button id="resetBtn">Reiniciar</button>
+            <button id="wifiBtn">WiFi</button>
+            <button id="dataBtn">Datos Móviles</button>
+        </div>
+        
+        <div class="canvas-container">
+            <canvas id="rutaCanvas"></canvas>
+        </div>
+        
+        <div class="info-panel">
+            <div id="infoText">
+                <h2>Selecciona un tipo de conexión para iniciar</h2>
+                <p>Esta visualización muestra cómo viajan los datos físicamente cuando abres Facebook.</p>
+            </div>
+            
+            <div class="step">
+                <h3>1. Desde tu Teléfono</h3>
+                <p><strong>WiFi:</strong> Los datos salen por ondas de radio hacia tu módem/router.</p>
+                <p><strong>Datos móviles (4G/5G):</strong> Van por ondas de radio a la antena de telefonía más cercana.</p>
+            </div>
+            
+            <div class="step">
+                <h3>2. Hacia tu Módem/Router</h3>
+                <p><strong>Infraestructura:</strong> Fibra óptica o cobre (ADSL) si tienes Internet por cable.</p>
+            </div>
+            
+            <div class="step">
+                <h3>3. De tu Router a la Central de tu ISP</h3>
+                <p><strong>Proveedor de Internet (ISP):</strong> Movistar, Claro, AT&T, etc.</p>
+                <p><strong>Medio físico:</strong> Fibra óptica (mayor velocidad) o cobre (más lento).</p>
+            </div>
+            
+            <div class="step">
+                <h3>4. De la Central del ISP al "Backbone"</h3>
+                <p><strong>Backbone:</strong> Red troncal de fibra óptica de alta capacidad que conecta ciudades y países.</p>
+                <p>Incluye cables submarinos y redes terrestres de fibra.</p>
+            </div>
+            
+            <div class="step">
+                <h3>5. Del Backbone al Data Center</h3>
+                <p><strong>Data Center:</strong> Edificio con miles de servidores donde está almacenado Facebook.</p>
+                <p>Las grandes empresas usan CDNs para guardar copias de la página cerca de ti.</p>
+            </div>
+            
+            <div class="step">
+                <h3>6. Vuelta a tu Dispositivo</h3>
+                <p>El Data Center envía la página web de regreso, recorriendo el mismo camino en milisegundos.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuración inicial
+        const canvas = document.getElementById('rutaCanvas');
+        const ctx = canvas.getContext('2d');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const wifiBtn = document.getElementById('wifiBtn');
+        const dataBtn = document.getElementById('dataBtn');
+        const infoText = document.getElementById('infoText');
+        
+        // Variables para la animación
+        let animationId;
+        let currentStep = 0;
+        let connectionType = null;
+        let packets = [];
+        let devicePosition, routerPosition, ispPosition, backbonePosition, datacenterPosition;
+        let isAnimating = false;
+        
+        // Ajustar tamaño del canvas
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            setupPositions();
+            drawBackground();
+        }
+        
+        // Configurar posiciones de los elementos
+        function setupPositions() {
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            devicePosition = { x: width * 0.1, y: height * 0.5 };
+            routerPosition = { x: width * 0.25, y: height * 0.5 };
+            ispPosition = { x: width * 0.4, y: height * 0.5 };
+            backbonePosition = { x: width * 0.6, y: height * 0.5 };
+            datacenterPosition = { x: width * 0.85, y: height * 0.5 };
+            
+            // Para la conexión de datos móviles, añadimos la posición de la antena
+            antennaPosition = { x: width * 0.25, y: height * 0.3 };
+        }
+        
+        // Dibujar el fondo con los elementos estáticos
+        function drawBackground() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Dibujar el dispositivo (teléfono)
+            drawDevice(devicePosition.x, devicePosition.y);
+            
+            if (connectionType === 'wifi') {
+                // Dibujar el router
+                drawRouter(routerPosition.x, routerPosition.y);
+            } else if (connectionType === 'data') {
+                // Dibujar la antena de telefonía
+                drawAntenna(antennaPosition.x, antennaPosition.y);
+            }
+            
+            // Dibujar la central ISP
+            drawISP(ispPosition.x, ispPosition.y);
+            
+            // Dibujar el backbone de Internet
+            drawBackbone(backbonePosition.x, backbonePosition.y);
+            
+            // Dibujar el data center
+            drawDatacenter(datacenterPosition.x, datacenterPosition.y);
+            
+            // Dibujar líneas de conexión
+            ctx.strokeStyle = '#ccc';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 3]);
+            
+            if (connectionType === 'wifi') {
+                // Línea de dispositivo a router
+                drawLine(devicePosition, routerPosition);
+                // Línea de router a ISP
+                drawLine(routerPosition, ispPosition);
+            } else if (connectionType === 'data') {
+                // Línea de dispositivo a antena
+                drawLine(devicePosition, antennaPosition);
+                // Línea de antena a ISP
+                drawLine(antennaPosition, ispPosition);
+            }
+            
+            // Línea de ISP a backbone
+            drawLine(ispPosition, backbonePosition);
+            // Línea de backbone a data center
+            drawLine(backbonePosition, datacenterPosition);
+            
+            ctx.setLineDash([]);
+        }
+        
+        // Funciones para dibujar los diferentes elementos
+        function drawDevice(x, y) {
+            ctx.fillStyle = '#333';
+            ctx.beginPath();
+            ctx.roundRect(x - 15, y - 25, 30, 50, 5);
+            ctx.fill();
+            
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.roundRect(x - 12, y - 22, 24, 40, 3);
+            ctx.fill();
+            
+            ctx.fillStyle = '#4267B2'; // Color de Facebook
+            ctx.font = '16px Arial';
+            ctx.fillText('', x - 4, y + 5);
+            
+            ctx.fillStyle = '#333';
+            ctx.beginPath();
+            ctx.arc(x, y + 22, 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#333';
+            ctx.font = '10px Arial';
+            ctx.fillText('Teléfono', x - 20, y + 40);
+        }
+        
+        function drawRouter(x, y) {
+            ctx.fillStyle = '#333';
+            ctx.beginPath();
+            ctx.roundRect(x - 20, y - 15, 40, 30, 5);
+            ctx.fill();
+            
+            // Antenas del router
+            ctx.beginPath();
+            ctx.moveTo(x - 15, y - 15);
+            ctx.lineTo(x - 15, y - 25);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(x, y - 15);
+            ctx.lineTo(x, y - 30);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(x + 15, y - 15);
+            ctx.lineTo(x + 15, y - 25);
+            ctx.stroke();
+            
+            // Luces del router
+            ctx.fillStyle = '#0f0';
+            ctx.beginPath();
+            ctx.arc(x - 10, y + 5, 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#f00';
+            ctx.beginPath();
+            ctx.arc(x, y + 5, 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#00f';
+            ctx.beginPath();
+            ctx.arc(x + 10, y + 5, 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#333';
+            ctx.font = '10px Arial';
+            ctx.fillText('Router', x - 15, y + 30);
+        }
+        
+        function drawAntenna(x, y) {
+            // Base de la torre
+            ctx.fillStyle = '#555';
+            ctx.beginPath();
+            ctx.rect(x - 5, y, 10, 50);
+            ctx.fill();
+            
+            // Estructura de la torre
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x - 20, y + 50);
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + 20, y + 50);
+            ctx.stroke();
+            
+            // Antenas
+            ctx.beginPath();
+            ctx.moveTo(x - 15, y - 10);
+            ctx.lineTo(x + 15, y - 10);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(x - 10, y - 20);
+            ctx.lineTo(x + 10, y - 20);
+            ctx.stroke();
+            
+            ctx.fillStyle = '#333';
+            ctx.font = '10px Arial';
+            ctx.fillText('Antena', x - 15, y + 70);
+        }
+        
+        function drawISP(x, y) {
+            ctx.fillStyle = '#666';
+            ctx.beginPath();
+            ctx.rect(x - 25, y - 30, 50, 60);
+            ctx.fill();
+            
+            // Ventanas del edificio
+            ctx.fillStyle = '#ccc';
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 4; j++) {
+                    ctx.fillRect(x - 20 + j * 12, y - 25 + i * 15, 8, 10);
+                }
+            }
+            
+            ctx.fillStyle = '#333';
+            ctx.font = '10px Arial';
+            ctx.fillText('ISP', x - 8, y + 40);
+        }
+        
+        function drawBackbone(x, y) {
+            // Representación del backbone como una nube de red
+            ctx.fillStyle = '#e6f7ff';
+            ctx.beginPath();
+            ctx.ellipse(x, y, 40, 30, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.strokeStyle = '#666';
+            ctx.beginPath();
+            ctx.ellipse(x, y, 40, 30, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Conexiones dentro de la nube
+            ctx.beginPath();
+            ctx.moveTo(x - 20, y - 10);
+            ctx.lineTo(x + 15, y - 5);
+            ctx.moveTo(x - 15, y + 10);
+            ctx.lineTo(x + 20, y + 5);
+            ctx.moveTo(x, y - 15);
+            ctx.lineTo(x, y + 15);
+            ctx.stroke();
+            
+            ctx.fillStyle = '#333';
+            ctx.font = '10px Arial';
+            ctx.fillText('Backbone', x - 25, y + 40);
+        }
+        
+        function drawDatacenter(x, y) {
+            // Servidores en rack
+            ctx.fillStyle = '#333';
+            for (let i = 0; i < 5; i++) {
+                ctx.fillRect(x - 25, y - 30 + i * 12, 50, 10);
+                
+                // Luces de los servidores
+                ctx.fillStyle = i % 2 === 0 ? '#0f0' : '#f00';
+                ctx.beginPath();
+                ctx.arc(x + 20, y - 25 + i * 12, 2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = '#333';
+            }
+            
+            // Logo de Facebook
+            ctx.fillStyle = '#4267B2';
+            ctx.font = '18px Arial Bold';
+            ctx.fillText('f', x - 5, y + 40);
+            
+            ctx.fillStyle = '#333';
+            ctx.font = '10px Arial';
+            ctx.fillText('Data Center', x - 25, y + 55);
+        }
+        
+        function drawLine(start, end) {
+            ctx.beginPath();
+            ctx.moveTo(start.x, start.y);
+            ctx.lineTo(end.x, end.y);
+            ctx.stroke();
+        }
+        
+        // Crear un paquete de datos
+        function createPacket(start, isFacebookData = false) {
+            return {
+                x: start.x,
+                y: start.y,
+                size: 10,
+                speed: 3,
+                color: isFacebookData ? '#4267B2' : '#ff9900',
+                active: true
+            };
+        }
+        
+        // Dibujar un paquete de datos
+        function drawPacket(packet) {
+            ctx.fillStyle = packet.color;
+            ctx.beginPath();
+            ctx.arc(packet.x, packet.y, packet.size / 2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Efecto de brillo
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.beginPath();
+            ctx.arc(packet.x - packet.size / 4, packet.y - packet.size / 4, packet.size / 4, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Actualizar la posición de un paquete según su ruta
+        function updatePacket(packet, step) {
+            let start, end;
+            
+            if (connectionType === 'wifi') {
+                if (step === 0) {
+                    start = devicePosition;
+                    end = routerPosition;
+                } else if (step === 1) {
+                    start = routerPosition;
+                    end = ispPosition;
+                } else if (step === 2) {
+                    start = ispPosition;
+                    end = backbonePosition;
+                } else if (step === 3) {
+                    start = backbonePosition;
+                    end = datacenterPosition;
+                } else if (step === 4) {
+                    start = datacenterPosition;
+                    end = backbonePosition;
+                } else if (step === 5) {
+                    start = backbonePosition;
+                    end = ispPosition;
+                } else if (step === 6) {
+                    start = ispPosition;
+                    end = routerPosition;
+                } else if (step === 7) {
+                    start = routerPosition;
+                    end = devicePosition;
+                }
+            } else if (connectionType === 'data') {
+                if (step === 0) {
+                    start = devicePosition;
+                    end = antennaPosition;
+                } else if (step === 1) {
+                    start = antennaPosition;
+                    end = ispPosition;
+                } else if (step === 2) {
+                    start = ispPosition;
+                    end = backbonePosition;
+                } else if (step === 3) {
+                    start = backbonePosition;
+                    end = datacenterPosition;
+                } else if (step === 4) {
+                    start = datacenterPosition;
+                    end = backbonePosition;
+                } else if (step === 5) {
+                    start = backbonePosition;
+                    end = ispPosition;
+                } else if (step === 6) {
+                    start = ispPosition;
+                    end = antennaPosition;
+                } else if (step === 7) {
+                    start = antennaPosition;
+                    end = devicePosition;
+                }
+            }
+            
+            // Calcular dirección
+            const dx = end.x - start.x;
+            const dy = end.y - start.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            // Normalizar y aplicar velocidad
+            const vx = (dx / distance) * packet.speed;
+            const vy = (dy / distance) * packet.speed;
+            
+            packet.x += vx;
+            packet.y += vy;
+            
+            // Verificar si llegó al destino
+            const reachedDestination = Math.abs(packet.x - end.x) < packet.speed && Math.abs(packet.y - end.y) < packet.speed;
+            
+            if (reachedDestination) {
+                packet.x = end.x;
+                packet.y = end.y;
+                return true;
+            }
+            
+            return false;
+        }
+        
+        // Actualizar texto informativo según el paso actual
+        function updateInfoText(step) {
+            let text = "";
+            
+            if (connectionType === 'wifi') {
+                if (step === 0) {
+                    text = "<h3>Paso 1: Del teléfono al router WiFi</h3><p>Tu solicitud para abrir Facebook sale de tu teléfono en forma de <span class='highlight'>paquetes de datos</span> que viajan por ondas de radio hasta tu router WiFi.</p>";
+                } else if (step === 1) {
+                    text = "<h3>Paso 2: Del router al ISP</h3><p>Tu router envía los paquetes a través de <span class='highlight'>fibra óptica o cable de cobre</span> hasta la central de tu proveedor de Internet (ISP).</p>";
+                } else if (step === 2) {
+                    text = "<h3>Paso 3: Del ISP al Backbone</h3><p>Desde la central del ISP, los datos viajan a través de <span class='highlight'>redes troncales de alta capacidad</span> que interconectan diferentes redes.</p>";
+                } else if (step === 3) {
+                    text = "<h3>Paso 4: Del Backbone al Data Center de Facebook</h3><p>Los paquetes llegan a uno de los <span class='highlight'>centros de datos</span> de Facebook, donde se procesa tu solicitud.</p>";
+                } else if (step >= 4) {
+                    text = "<h3>Paso 5: La respuesta vuelve a tu teléfono</h3><p>Facebook devuelve los <span class='highlight'>datos de tu feed</span>, que recorren el camino inverso hasta llegar a tu teléfono.</p>";
+                }
+            } else if (connectionType === 'data') {
+                if (step === 0) {
+                    text = "<h3>Paso 1: Del teléfono a la antena de telefonía</h3><p>Tu solicitud para abrir Facebook sale de tu teléfono en forma de <span class='highlight'>paquetes de datos</span> que viajan por ondas de radio hasta la antena de telefonía móvil más cercana.</p>";
+                } else if (step === 1) {
+                    text = "<h3>Paso 2: De la antena al ISP</h3><p>La antena de telefonía envía los paquetes a través de <span class='highlight'>conexiones de alta velocidad</span> hasta la central de tu operador móvil.</p>";
+                } else if (step === 2) {
+                    text = "<h3>Paso 3: Del ISP al Backbone</h3><p>Desde la central del operador, los datos viajan a través de <span class='highlight'>redes troncales de alta capacidad</span> que interconectan diferentes redes.</p>";
+                } else if (step === 3) {
+                    text = "<h3>Paso 4: Del Backbone al Data Center de Facebook</h3><p>Los paquetes llegan a uno de los <span class='highlight'>centros de datos</span> de Facebook, donde se procesa tu solicitud.</p>";
+                } else if (step >= 4) {
+                    text = "<h3>Paso 5: La respuesta vuelve a tu teléfono</h3><p>Facebook devuelve los <span class='highlight'>datos de tu feed</span>, que recorren el camino inverso hasta llegar a tu teléfono.</p>";
+                }
+            }
+            
+            infoText.innerHTML = text;
+        }
+        
+        // Función de animación principal
+        function animate() {
+            drawBackground();
+            
+            let allPacketsArrived = true;
+            
+            // Actualizar y dibujar paquetes
+            for (let i = 0; i < packets.length; i++) {
+                const packet = packets[i];
+                if (!packet.active) continue;
+                
+                const arrived = updatePacket(packet, currentStep);
+                drawPacket(packet);
+                
+                if (arrived) {
+                    if (currentStep < 7) {
+                        // Pasar al siguiente paso de la ruta
+                        currentStep++;
+                        updateInfoText(currentStep);
+                        
+                        // Si llegamos al data center, cambiamos el color del paquete a azul (Facebook)
+                        if (currentStep === 4) {
+                            packet.color = '#4267B2';
+                        }
+                    } else {
+                        packet.active = false;
+                    }
+                }
+                
+                if (packet.active) {
+                    allPacketsArrived = false;
+                }
+            }
+            
+            if (allPacketsArrived) {
+                // Generar nuevos paquetes si todos han llegado
+                if (packets.length < 5) {
+                    packets.push(createPacket(devicePosition));
+                    currentStep = 0;
+                    updateInfoText(currentStep);
+                } else {
+                    // Detener la animación después de varios ciclos
+                    isAnimating = false;
+                    return;
+                }
+            }
+            
+            // Continuar la animación
+            if (isAnimating) {
+                animationId = requestAnimationFrame(animate);
+            }
+        }
+        
+        // Iniciar la animación
+        function startAnimation() {
+            if (!connectionType) {
+                alert("Selecciona primero un tipo de conexión (WiFi o Datos Móviles)");
+                return;
+            }
+            
+            if (isAnimating) return;
+            
+            isAnimating = true;
+            currentStep = 0;
+            packets = [createPacket(devicePosition)];
+            updateInfoText(currentStep);
+            
+            animate();
+        }
+        
+        // Reiniciar la animación
+        function resetAnimation() {
+            isAnimating = false;
+            cancelAnimationFrame(animationId);
+            packets = [];
+            currentStep = 0;
+            
+            if (connectionType) {
+                drawBackground();
+                infoText.innerHTML = "<h2>Visualización reiniciada</h2><p>Haz clic en 'Iniciar Animación' para comenzar de nuevo.</p>";
+            } else {
+                infoText.innerHTML = "<h2>Selecciona un tipo de conexión para iniciar</h2><p>Esta visualización muestra cómo viajan los datos físicamente cuando abres Facebook.</p>";
+            }
+        }
+        
+        // Configurar tipo de conexión WiFi
+        function setWifiConnection() {
+            connectionType = 'wifi';
+            resetAnimation();
+            drawBackground();
+            infoText.innerHTML = "<h2>Conexión WiFi seleccionada</h2><p>Haz clic en 'Iniciar Animación' para ver cómo viajan los datos a través de tu conexión WiFi.</p>";
+        }
+        
+        // Configurar tipo de conexión de datos móviles
+        function setDataConnection() {
+            connectionType = 'data';
+            resetAnimation();
+            drawBackground();
+            infoText.innerHTML = "<h2>Conexión de Datos Móviles seleccionada</h2><p>Haz clic en 'Iniciar Animación' para ver cómo viajan los datos a través de tu conexión de datos móviles.</p>";
+        }
+        
+        // Event listeners
+        startBtn.addEventListener('click', startAnimation);
+        resetBtn.addEventListener('click', resetAnimation);
+        wifiBtn.addEventListener('click', setWifiConnection);
+        dataBtn.addEventListener('click', setDataConnection);
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Inicialización
+        resizeCanvas();
+    </script>
+</body>
+</html>
