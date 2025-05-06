@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animación Maletín</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #222;
+        }
+        
+        #canvas-container {
+            position: relative;
+            width: 720px;
+            height: 1280px;
+        }
+        
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            border: 2px solid #333;
+        }
+        
+        .instructions {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            color: white;
+            font-family: Arial, sans-serif;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container">
+        <canvas id="gameCanvas" width="540" height="960"></canvas>
+    </div>
+
+    <script>
+        // Configuración inicial
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Dimensiones
+        const width = canvas.width;
+        const height = canvas.height;
+        
+        // Variables para el maletín
+        let briefcaseX = 100;
+        let briefcaseY = height / 5;
+        const briefcaseSize = 150;
+        let briefcaseDirection = 1;
+        let briefcaseSpeed = 3;
+        let briefcaseImage = new Image();
+        let useImage = true;
+        let briefcaseStopped = false;
+        let showCage = false;
+        
+        // Intentar cargar la imagen del maletín
+        briefcaseImage.src = 'maletin.png';
+        briefcaseImage.onerror = function() {
+            useImage = false;
+            console.log('Imagen de maletín no encontrada, usando círculo como alternativa');
+        };
+        
+        // Edificios (con más detalles y mejor apariencia)
+        const buildings = [
+            { x: width * 0.01, y: height - 50, radius: 200, fillColor: '#4a90e2', windowColor: '#f5f5f5' },
+            { x: width * 0.99, y: height - 50, radius: 200, fillColor: '#3b7eb8', windowColor: '#e0e0e0' }
+        ];
+        
+        // Función para dibujar los edificios
+        function drawBuildings() {
+            buildings.forEach(building => {
+                const { x, y, radius, fillColor, windowColor } = building;
+                
+                // Dibujar el círculo del edificio con relleno
+                ctx.beginPath();
+                ctx.arc(x, y, radius, Math.PI, 0, false);
+                ctx.fillStyle = fillColor;
+                ctx.fill();
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                
+                // Dibujar ventanas en el edificio
+                const numWindows = 6; // Número de ventanas por fila/columna
+                const windowSize = radius / numWindows; // Tamaño de las ventanas
+                const spacing = windowSize * 1.5; // Espaciado entre ventanas
+                
+                // Dibujar las ventanas en una cuadrícula dentro del semicírculo
+                for (let i = 0; i < numWindows; i++) {
+                    for (let j = 0; j < numWindows / 2; j++) {
+                        const windowX = x + (i - numWindows / 2) * spacing;
+                        const windowY = y - (j + 0.5) * spacing; // Solo en la mitad superior
+                        
+                        // Verificar si la ventana está dentro del semicírculo
+                        const distanceFromCenter = Math.sqrt(
+                            Math.pow(windowX - x, 2) + Math.pow(windowY - y, 2)
+                        );
+                        
+                        if (distanceFromCenter < radius - windowSize) {
+                            // Dibujar ventana con efecto de luz
+                            ctx.fillStyle = windowColor;
+                            ctx.fillRect(
+                                windowX - windowSize / 2,
+                                windowY - windowSize / 2,
+                                windowSize,
+                                windowSize
+                            );
+                            
+                            // Borde de la ventana
+                            ctx.strokeStyle = '#333';
+                            ctx.lineWidth = 1;
+                            ctx.strokeRect(
+                                windowX - windowSize / 2,
+                                windowY - windowSize / 2,
+                                windowSize,
+                                windowSize
+                            );
+                            
+                            // Efecto de brillo en algunas ventanas (aleatorio)
+                            if (Math.random() > 0.7) {
+                                ctx.fillStyle = 'rgba(255, 255, 190, 0.8)';
+                                ctx.fillRect(
+                                    windowX - windowSize / 2,
+                                    windowY - windowSize / 2,
+                                    windowSize,
+                                    windowSize
+                                );
+                            }
+                        }
+                    }
+                }
+                
+                // Agregar sombreado para dar profundidad al edificio
+                ctx.beginPath();
+                ctx.arc(x, y, radius, Math.PI, 0, false);
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.fill();
+                
+                // Agregar base del edificio
+                ctx.fillStyle = fillColor;
+                ctx.fillRect(x - radius, y, radius * 2, 50);
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x - radius, y, radius * 2, 50);
+            });
+        }
+        
+        // Función para dibujar el maletín
+        function drawBriefcase() {
+            if (useImage && briefcaseImage.complete) {
+                ctx.drawImage(
+                    briefcaseImage, 
+                    briefcaseX - briefcaseSize/2, 
+                    briefcaseY - briefcaseSize/2, 
+                    briefcaseSize, 
+                    briefcaseSize
+                );
+            } else {
+                // Círculo como alternativa
+                ctx.beginPath();
+                ctx.arc(briefcaseX, briefcaseY, briefcaseSize/2, 0, Math.PI * 2);
+                ctx.fillStyle = 'brown';
+                ctx.fill();
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+            
+            // Dibujar la jaula si es necesario
+            if (showCage) {
+                drawCage();
+            }
+        }
+        
+        // Función para dibujar la jaula
+        function drawCage() {
+            const cageSize = briefcaseSize * 1.5;
+            const barSpacing = 10;
+            
+            // Barras verticales
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 2;
+            
+            for (let x = briefcaseX - cageSize/2; x <= briefcaseX + cageSize/2; x += barSpacing) {
+                ctx.beginPath();
+                ctx.moveTo(x, briefcaseY - cageSize/2);
+                ctx.lineTo(x, briefcaseY + cageSize/2);
+                ctx.stroke();
+            }
+            
+            // Barras horizontales arriba y abajo  
+            for (let y = briefcaseY - cageSize/2; y <= briefcaseY + cageSize/2; y += barSpacing) {
+                ctx.beginPath();
+                ctx.moveTo(briefcaseX - cageSize/2, y);
+                ctx.lineTo(briefcaseX + cageSize/2, y);
+                ctx.stroke();
+            }
+        }
+        
+        // Función principal de animación
+        function animate() {
+            // Limpiar el canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            // Dibujar todo
+            drawBackground();
+            drawBuildings();
+            drawBriefcase();
+            
+            // Actualizar posición del maletín si no está detenido
+            if (!briefcaseStopped) {
+                briefcaseX += briefcaseSpeed * briefcaseDirection;
+                
+                // Cambiar dirección si llega a los bordes
+                if (briefcaseX >= width - briefcaseSize/2 || briefcaseX <= briefcaseSize/2) {
+                    briefcaseDirection *= -1;
+                }
+            }
+            
+            // Continuar la animación
+            requestAnimationFrame(animate);
+        }
+        
+        // Detectar pulsación de tecla S
+        document.addEventListener('keydown', function(event) {
+            if (event.key.toLowerCase() === 's' && !briefcaseStopped) {
+                briefcaseStopped = true;
+                showCage = true;
+            }
+        });
+        
+        // Iniciar la animación
+        animate();
+        
+        // Función para dibujar el fondo (chroma keyer)
+        function drawBackground() {
+            ctx.fillStyle = '#00FF00'; // Verde chroma
+            ctx.fillRect(0, 0, width, height);
+        }
+        
+        // Función para dibujar los edificios
+        function drawBuildings() {
+            buildings.forEach(building => {
+                const { x, y, radius, fillColor, windowColor } = building;
+                
+                // Dibujar el círculo del edificio con relleno
+                ctx.beginPath();
+                ctx.arc(x, y, radius, Math.PI, 0, false);
+                ctx.fillStyle = fillColor;
+                ctx.fill();
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                
+                // Dibujar ventanas en el edificio
+                const numWindows = 6; // Número de ventanas por fila/columna
+                const windowSize = radius / numWindows; // Tamaño de las ventanas
+                const spacing = windowSize * 1.5; // Espaciado entre ventanas
+                
+                // Dibujar las ventanas en una cuadrícula dentro del semicírculo
+                for (let i = 0; i < numWindows; i++) {
+                    for (let j = 0; j < numWindows / 2; j++) {
+                        const windowX = x + (i - numWindows / 2) * spacing;
+                        const windowY = y - (j + 0.5) * spacing; // Solo en la mitad superior
+                        
+                        // Verificar si la ventana está dentro del semicírculo
+                        const distanceFromCenter = Math.sqrt(
+                            Math.pow(windowX - x, 2) + Math.pow(windowY - y, 2)
+                        );
+                        
+                        if (distanceFromCenter < radius - windowSize) {
+                            // Dibujar ventana con efecto de luz
+                            ctx.fillStyle = windowColor;
+                            ctx.fillRect(
+                                windowX - windowSize / 2,
+                                windowY - windowSize / 2,
+                                windowSize,
+                                windowSize
+                            );
+                            
+                            // Borde de la ventana
+                            ctx.strokeStyle = '#333';
+                            ctx.lineWidth = 1;
+                            ctx.strokeRect(
+                                windowX - windowSize / 2,
+                                windowY - windowSize / 2,
+                                windowSize,
+                                windowSize
+                            );
+                            
+                            // Efecto de brillo en algunas ventanas (aleatorio)
+                            if (Math.random() > 0.7) {
+                                ctx.fillStyle = 'rgba(255, 255, 190, 0.8)';
+                                ctx.fillRect(
+                                    windowX - windowSize / 2,
+                                    windowY - windowSize / 2,
+                                    windowSize,
+                                    windowSize
+                                );
+                            }
+                        }
+                    }
+                }
+                
+                // Agregar sombreado para dar profundidad al edificio
+                ctx.beginPath();
+                ctx.arc(x, y, radius, Math.PI, 0, false);
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.fill();
+                
+                // Agregar base del edificio
+                ctx.fillStyle = fillColor;
+                ctx.fillRect(x - radius, y, radius * 2, 50);
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x - radius, y, radius * 2, 50);
+            });
+        }
+    </script>
+</body>
+</html>
